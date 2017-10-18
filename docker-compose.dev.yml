@@ -7,17 +7,17 @@ services:
       - "80:80"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-  site:
+  robot-site:
     image: natdarke/robot-site
-    build: build/site
+    build: build/robot-site
     volumes:
-      - "build/site/dist_simple:/usr/src/app"
+      - "./build/robot-site/dist_simple:/usr/src/app"
     env_file:
-      - environment/site.env
+      - environment/robot-site.env
     ports:
       - "5000:3000"
     depends_on:
-      - contentful
+      - contentful-cache
     command: npm run startdev
   mysql:
     image: mysql:5.7.18
@@ -25,13 +25,13 @@ services:
       - environment/mysql.env
     ports:
       - "5002:3306"
-  contentful:
-    build: build/contentful
-    image: natdarke/contentful
+  contentful-cache:
+    build: build/contentful-cache
+    image: natdarke/contentful-cache
     volumes:
-      - build/contentful/src:/var/www/html
+      - ./build/contentful-cache/src:/var/www/html
     env_file:
-      - environment/contentful.env
+      - environment/contentful-cache.env
     ports:
       - "5001:80"
     depends_on:

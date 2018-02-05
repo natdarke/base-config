@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  site:
+    image: natdarke/robot-site
+    build: build/site
+    volumes:
+      - "build/site/dist_simple:/usr/src/app"
+    env_file:
+      - environment/site.env
+    ports:
+      - "5000:3000"
+    depends_on:
+      - contentful
+    command: npm run startdebug
+  mysql:
+    image: mysql:5.7.18
+    env_file:
+      - environment/mysql.env
+    ports:
+      - "5002:3306"
+  contentful:
+    build: build/contentful
+    image: natdarke/contentful
+    volumes:
+      - build/contentful/src:/var/www/html
+    env_file:
+      - environment/contentful.env
+    environment:
+      - VIRTUAL_HOST=contentful.robot.dev
+    ports:
+      - "5001:80"
+    depends_on:
+      - mysql

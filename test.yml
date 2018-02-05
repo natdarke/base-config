@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  static:
+    build: services/static
+    volumes:
+      - "./services/static/src:/var/www"
+    ports: 
+      - "5003:80"
+    environment:
+      - VIRTUAL_HOST=static.robot.test
+  robot-site:
+    build: services/robot-site
+    volumes:
+      - "./services/robot-site/dev:/usr/src/app"
+    env_file:
+      - environment/robot-site.env
+    ports:
+      - "5000:3000"
+    depends_on:
+      - contentful-cache
+      - static
+    command: npm start
+  mysql:
+    image: mysql:5.7.18
+    env_file:
+      - environment/mysql.env
+    ports:
+      - "5002:3306"
+  contentful-cache:
+    build: services/contentful-cache
+    image: natdarke/contentful-cache
+    volumes:
+      - ./services/contentful-cache/src:/var/www/html
+    env_file:
+      - environment/contentful-cache.env
+    ports:
+      - "5001:80"
+    depends_on:
+      - mysql

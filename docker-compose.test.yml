@@ -18,7 +18,7 @@ services:
   robot-site:
     build: services/robot-site
     volumes:
-      - "./services/robot-site/dev:/usr/src/app"
+      - "./services/robot-site/app:/usr/src/app"
     env_file:
       - environment/robot-site.env
     ports:

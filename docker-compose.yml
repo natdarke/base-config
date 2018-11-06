@@ -26,7 +26,6 @@ services:
     depends_on:
       - contentful-cache
       - static
-    command: npm start
   mysql:
     image: mysql:5.7.18
     env_file:

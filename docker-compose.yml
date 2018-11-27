@@ -8,13 +8,13 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
   static:
-    build: ../services/static:dev
+    image: natdarke/robot-service-static
     ports: 
       - "5003:80"
     environment:
       - environment/prod/robot-site.env
   robot-site:
-    image: natdarke/robot-site:dev
+    image: natdarke/robot-service-front-end
     env_file:
       - environment/prod/robot-site.env
     ports:
@@ -29,7 +29,7 @@ services:
     ports:
       - "5002:3306"
   contentful-cache:
-    image: natdarke/contentful-cache:dev
+    image: natdarke/robot-service-contentful-cache
     env_file:
       - environment/prod/contentful-cache.env
     ports:

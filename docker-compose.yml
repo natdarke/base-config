@@ -13,12 +13,12 @@ services:
       - "5003:80"
     environment:
       - environment/prod/robot-service-static.env
-  robot-site:
+  front-end:
     image: natdarke/robot-service-front-end
     env_file:
       - environment/prod/robot-service-front-end.env
     ports:
-      - "5000:3000"
+      - "5000:5000"
     depends_on:
       - contentful-cache
       - static

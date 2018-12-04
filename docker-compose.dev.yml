@@ -20,7 +20,7 @@ services:
     volumes:
       - "../services/front-end/app:/usr/src/app"
     env_file:
-      - environment/dev/robot-site.env
+      - environment/dev/robot-service-front-end.env
     ports:
       - "5000:3000"
     depends_on:

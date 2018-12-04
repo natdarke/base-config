@@ -14,7 +14,7 @@ services:
     ports: 
       - "5003:80"
     environment:
-      - environment/dev/static.env
+      - environment/dev/robot-service-static.env
   front-end:
     image: natdarke/robot-service-front-end:develop
     volumes:
@@ -38,7 +38,7 @@ services:
     volumes:
       - ../services/contentful-cache/src:/var/www/html
     env_file:
-      - environment/dev/contentful-cache.env
+      - environment/dev/robot-service-contentful-cache.env
     ports:
       - "5001:80"
     depends_on:

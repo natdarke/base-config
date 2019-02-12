@@ -93,7 +93,7 @@ It serves 2 main purposes
 
 1. Persistent Data
     * To hold data used by a database service. DB services are containers. Data added to a container whilst running will not persist between restarts. Therefore, a solution is to keep the data in a host directory
-    * This can be accomplished using a service from your cloud infrastructure provider e.g. AWS "EBS Volume", or Digital Ocean "Block Storage Volume" - you can mount a volume completely outside your host computer to the /mnt directory. This is a very flexible and safe way to keep valuable data available to a Docker-based micro-services application.
+    * Even better, this can be accomplished using a service from your cloud infrastructure provider e.g. AWS "EBS Volume", or Digital Ocean "Block Storage Volume" - you can mount a volume completely outside your host computer to the /mnt directory. This is a very flexible and safe way to keep valuable data available to a Docker-based micro-services application.
 2. Development
     * It is very inconvenient to work on code inside a container during development
     * A developer can mount a volume from their local machine inside a container, thereby allowing them to work on local code but have that code used within an application container/service
@@ -207,20 +207,78 @@ It serves 2 main purposes
 
 ## Develop a Feature or Fix a Bug
 
+Development can a be a complex process for 2 main reasons:
+
+1. There are 3 layers: Root > Service > Module
+2. There are many Services amd many Modules
+3. There are many branches of each
+
 ### Assumptions
 * The application is working on your local machine, following the instructions in [Set Up App on Local Host](#set-up-app-on-local-host)
 * The feature only requires work on 1 service. If you your feature requires that you work on more than one service, see [Develop with Multiple services](#develop-with-multiple-services)
 * You don't need to work on any NPM packages. If you do, see [Develop with NPM packages](#develop-with-npm-packages)
 
-### Background reading
-*  GitFlow methodology is an essential part of the the workflow we use. Understanding it would be very useful.
 
-### General Rules For Git
-* You should view your local master and develop branches as 'read only'
-* Do not change them with local commits or merges
-* The only way they should change is by updating them from the remote repo using pull
-* New branches should always be made from an up-to-date develop
-* When you are finished, push the branch to the remote repo, where it can be merged into develop after code-review and testing
+### Branches
+
+We use GitFlow as our branching strategy for services and modules. https://nvie.com/posts/a-successful-git-branching-model/
+
+#### Master Branch
+
+Master is a permanent branch that reflects the current code in production
+
+Rules
+
+1. Merging to master should only ever happen in 2 situations:
+    1. Standard Release to Production
+        * After all testing has been complete on the release branch, release in merged into master and released to production
+    2. Emergency Bug Fix
+        * When a bug in production is found, a hotfix branch is made from master, the bug is fixed and then merged into master and develop
+2. Only merge on the remote repo
+3. Never use your local master branch
+4. Never branch from master
+5. All merges to master should be conflict free and result in a fast forward. If this is not true, you are not following the rules.
+
+#### Release
+
+A release branch is a temporary branch created when all some work has been completed e.g. at the end of a sprint, and a release is planned. 
+
+* Used for regression and UAT testing
+* Should be named `realease/[version]`
+* Bugs found during testing are fixed on this branch and merged into develop.
+* When testing is complete, it is merged into master and deleted
+
+#### Develop Branch
+
+Develop is a permanent branch used for development. Like the master branch it is never deleted and should be viewed as a read only branch, except for merges done in the remote repo
+
+If code is on the develop branch it means, very specifically, that :
+
+1. All features on it have been tested
+2. All code has been code reviewed
+
+Rules
+1. Always start new work by pulling the develop branch and branching from that. If there is a conflict then something is very wrong and you should probably get a fresh copy by deleting your local develop branch and doing a `pull` from the remote again
+2. Never merge into local develop branch
+3. Never push to remote develop branch
+4. Never delete remote develop branch
+5. Always merge to develop in the remote repo (GitHub) but only after a PR, code review and feature testing
+
+#### Feature Branch
+
+Feature are temporary branches created for an individual developer to complete a story
+
+* One feature branch per story or task.
+* Should be named `feature/[feature-name][story-id]`. This could include the story id from JIRA
+* Used to make feature builds. 
+* Should be deleted after use
+    * After a feature build has been tested, the branch is merged into develop in GitHub and the branch can be deleted, both locally and on GitHub
+
+#### Bug
+
+Same as a feature branch but used to fix a bug, rather than build a new feature
+* Should be named `bug/[bug-name][bug-id]`
+
 
 ### Steps
 
@@ -639,7 +697,6 @@ Summary:
     git checkout develop 
     git branch feature/[feature-name]
     git checkout feature/[feature-name]
-
     ```
 
     2. Bump the service version, according to Semantic Versioning principles, and git commit the change
@@ -681,6 +738,17 @@ There are many ways to specifiy which version of a package should be used in pac
                             - IF they are tagged with 'latest'
                             - Higher versions are preferable
 ```
+
+## Testing
+
+### Unit Testing
+
+### Feature Testing
+
+### Smoke Testing
+
+### 
+
 
 ## Deploy to Production
 

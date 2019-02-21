@@ -12,11 +12,11 @@ services:
     ports: 
       - "5003:80"
     environment:
-      - environment/dev/static.env
-  robot-site:
+      - environment/dev/robot-service-static.env
+  front-end:
     image: natdarke/robot-service-front-end:develop
     env_file:
-      - environment/dev/robot-site.env
+      - environment/dev/robot-service-front-end.env
     ports:
       - "5000:3000"
     depends_on:
@@ -32,46 +32,7 @@ services:
   contentful-cache:
     image: natdarke/robot-service-contentful-cache:develop
     env_file:
-      - environment/dev/contentful-cache.env
-    ports:
-      - "5001:80"
-    depends_on:
-      - mysql
-version: '3'
-
-services:
-  nginx-proxy:
-    image: jwilder/nginx-proxy
-    ports:
-      - "80:80"
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-  static:
-    build: ../services/static:dev
-    ports: 
-      - "5003:80"
-    environment:
-      - environment/dev/static.env
-  robot-site:
-    image: natdarke/robot-site:dev
-    env_file:
-      - environment/dev/robot-site.env
-    ports:
-      - "5000:3000"
-    depends_on:
-      - contentful-cache
-      - static
-    command: npm start
-  mysql:
-    image: mysql:5.7.18
-    env_file:
-      - environment/dev/mysql.env
-    ports:
-      - "5002:3306"
-  contentful-cache:
-    image: natdarke/contentful-cache:dev
-    env_file:
-      - environment/dev/contentful-cache.env
+      - environment/dev/robot-service-contentful-cache.env
     ports:
       - "5001:80"
     depends_on:

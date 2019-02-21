@@ -562,9 +562,6 @@ Our packages are owned by an organisation and are private. Therfore, you will ha
 1. Have an npmjs.com account
 2. Ask us to add your account to the organisation and give you permission to install and publish
 3. Login to your account on the command line once. This will generate a token which is stored in an ~/.npmrc file. You won't be required to login again as you will be authenticated by the stored token for future installations or publications (unless you change your npmjs.com password).
-
-
-
  
 #### NPM Tagging
 
@@ -592,11 +589,48 @@ NPM packages need to be published during development. How do you stop a developm
 
 If you need to work with an NPM package the workflow gets a bit more complicated as the code is not in the repo for the service. It is a module used by the service, not part of the service _per se_.
 
-NPM packages are designed to be used by many services or applications. They should be useful _in general_ and are not supposed to be application specific
-
-Therefore, if you need to work with an NPM package as part of a feature story it is probably worth splitting the working on the NPM package into a seperate task, to be completed before the work on the feature story begins
+NPM packages are designed to be used by many services or applications. They should be useful _in general_ and are not supposed to be application specific. Therefore, if you need to work with an NPM package as part of a feature story it is probably worth splitting the working on the NPM package into a seperate task, to be completed before the work on the feature story begins.
 
 To complete the feature story you might not need to change a service at all, other than to change the version of the NPM package it uses.
+
+
+
+##### NPM Link
+
+During development you will probably need to use NPM Link. This is a feature of NPM that allows you to use a local development copy of the NPM package inside an app, instead of the published version. In other words, after you have installed dependencies in an NPM app, you can replace one of those dependencies (in `./node_modules`) with a local development package that you cloned from GitHub and are using for development.
+
+To make matters more confusing, you are also using a Docker Volume during development
+
+> NPM Link uses symlinks to temporarily replace the npm package in `/path/to/app/node_modules` with the one in `/path/to/local/dev/npm/package/`
+
+The process is achieved in 2 steps
+
+1. Link the local development package to NPM's global install directory
+    ```
+    cd /path/to/local/dev/npm/package/
+    npm link
+    ```
+    This step creates a symbolic link in the NPM global install directory that points to the local development package. More specifically, a symbolic link is create in `[prefix]/lib/node_modules/[package-name]` that points to `/path/to/local/dev/npm/package/`
+
+    > The NPM global install directory is where NPM installs packages when you use the -g flag i.e. packages that are used on the command line rather than used as a dependency in an application. It can be located in different places according to your OS and if you are using Node Version Manager (NVM) but takes the form `[prefix]/lib/node_modules/[package-name]`, with `{prefix}` being the part that varies. 
+
+    > On Ubuntu Linux, the location is either probably `/usr/local/lib/node_modules/[package-name]` or, if you are using NVM, `~/.nvm/versions/node/[version-number]/lib/node_modules`
+2. Link NPM's global install directory to the application
+    ```
+    cd /path/to/app/
+    npm link [package-name]
+    ```
+    Creates Symbolic link in `[prefix]/lib/node_modules/` that points to `/path/to/app/node_modules/[package-name]`
+
+To make matters more confusing, you are also [Using Volumes in Development](#using-volumes-in-development). You have a NPM dev package linked to an app. The app is inside a volume. The volume is linked to a directory inside a service container. See figure 1 (To Do)
+
+> In fact NPM Link has similar utility to using a Docker Volume. In the case of both NPM Link And Docker Volumes, you are asking a parent 'thing' to temporarily replace some child code with a newer, development version of the same code on your local machine
+```
+Method          Parent              Child
+-------------------------------------------------------
+Docker volume   Docker container    JS app code
+NPM Link        JS app Code         JS NPM dependency
+```
 
 
 #### NPM Package Testing. 
@@ -619,32 +653,22 @@ Summary:
 2. Use the new version of the package in the service
 3. Use the new version of the service in the root app
 
+See [NPM Package Development](#npm-package-development)
+
 ---
 
 1. Work on the package
     
     1. Clone package repo 
         ```
-        mkdir ~/[your dev directory name]/[app-name]/service/[service-name]/node_modules_linked
-
-        cd ~/[your dev directory name]/[app-name]/service/[service-name]/node_modules_linked
+        mkdir ~/[your dev directory name]/[app-name]/package/[package-name]/
+        
+        cd ~/[your dev directory name]/[app-name]/package/[package-name]/ 
 
         git clone git@github.com:natdarke/[package-name].git
         ```
 
-    2. Instruct git to ignore `node_modules_linked` directory
-    
-        Add this line
-
-        ```
-        node_modules_linked
-        ```
-        ...to `~/[your dev directory name]/[app-name]/service/[service-name]/.gitignore`
-
-        > nodes_modules_linked is just a temporary directory designed to house packages during development. Therefore it should not be part of the repo
-
-
-    3. In the package, branch from `develop` to `feature/[feature-name]`
+    2. In the package, branch from `develop` to `feature/[feature-name]`
         ```
         cd ~/[your dev directory name]/[app-name]/service/[service-name]/node_modules_linked/[package-name]
 
@@ -656,9 +680,10 @@ Summary:
 
         git checkout feature/[feature-name]
         ```
-    4. Link the package code to the service code using `npm link`
+    3. Link the package to the service using `npm link`
+        See [NPM Link](#npm-link)
         ```
-        cd ~/[your dev directory name]/[app-name]/service/[service-name]/node_modules_linked/[package-name]
+        cd ~/[your dev directory name]/[app-name]/package/[package-name]/
 
         npm link
 
@@ -666,18 +691,11 @@ Summary:
 
         npm link [package-name]
         ```
-        > This allows you to work on the package code during devlopement and see the changes you make reflected in the service. This has similar utility to using a `volume` inside a docker container. 
-
-        > In the case of both NPM Link And Docker Volumes, you are asking a parent 'thing' to temporarily replace some child code with a newer, development version of the same code on your local machine
-        ```
-        Method          Parent              Child
-        -------------------------------------------------------
-        Docker volume   Docker container    JS app code
-        NPM Link        JS app Code         JS NPM dependency
-        ```
+        > This allows you to work on the package code during development and see the changes you make reflected in the service. 
         
 
-    5. Work on `~/[your dev directory name]/[app-name]/service/[service-name]/node_modules_linked/[package-name]` with git as per normal
+    5. Work on `~/[your dev directory name]/[app-name]/package/[package-name]/` with git as per normal
+
     6. Bump the package version, according to [Semantic Versioning](#semantic-versioning) principles, and git commit the change
 
         e.g. change 
@@ -693,7 +711,7 @@ Summary:
             "version": "1.1.0",
         ```
         
-        in `~/[your dev directory name]/[app-name]/service/[service-name]/node_modules_linked/[package-name]/package.json`
+        in `~/[your dev directory name]/[app-name]/package/[package-name]/package.json`
     7. Push `feature/[feature-name]` branch
         ```
         git push origin feature/[feature-name]
@@ -707,10 +725,10 @@ Summary:
         ```
         npm login
         ```
-        > You will be prompted for a username a password. You must have an npmjs.com account and that account must have been given permission to publish by its owner
+        > You may be prompted for a username a password. You must have an npmjs.com account and that account must have been given permission to publish by its owner. See [Publishing to NPM JS](#publishing-to-npm-js)
 
         ```
-        cd ~/[your dev directory name]/[app-name]/service/[service-name]/node_modules_linked/[package-name]
+        cd ~/[your dev directory name]/[app-name]/package/[package-name]
 
         npm publish --tag feature-[feature-name]
         ```
@@ -726,14 +744,24 @@ Summary:
         git checkout feature/[feature-name]
         ```
 
-    2. Bump the service version, according to Semantic Versioning principles, and git commit the change `service/[service-name]/package.json` bump dependency version to be same as version in `service/[service-name]/node_modules_linked/[package-name]/package.json` e.g. `^1.1.0`
+    2. Bump the service version, according to Semantic Versioning principles, and git commit the change `~/[your dev directory name]/[app-name]/service/[service-name]/package.json` bump dependency version to be same as version in `~/[your dev directory name]/[app-name]/package/[package-name]/package.json` e.g. `^1.1.0`
     3. Push service feature branch and proceed as if this was a normal service feature development.
     4. When you are satisfied that this package has had enough testing, re-publish with the tag `latest`
 
 3. Use the new version of the service in the root app
-    1. Create a new fetaure branch from master
-        - Root is, essentially, a config and doesn't need a full branching strategy like services and NPM packages
-    2. In `docker-compose.test.yml` change the version of the 
+    1. Create a new feature branch from master
+        ```
+        cd ~/[your dev directory name]/[app-name]/root
+        git fetch
+        git checkout master
+        git branch feature/[feature-name]
+        git checkout feature/[feature-name]
+        ```
+        - It is fine to branch Root from master as it is, in essence, just some config code that rarely changes i.e. it isn't complicated and doesn't need a full branching strategy like services and NPM packages
+    2. In `docker-compose.test.yml` change the image tag of the of the service or services you have changes e.g. 
+        ```
+        
+        ``` 
 
 
 

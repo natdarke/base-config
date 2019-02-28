@@ -947,3 +947,12 @@ NPM Link        JS app Code         JS NPM dependency
 
 ### Docker
 
+Docker is an application that allows the creation and management of containers. Containers are vitual linux operating systems which can run applications and store data but don't have a kernal. They can do this because they use the kernal of the host operating system which makes them resource efficient. Docker can run many containers at the same time, all of them using the same kernal of their host OS.
+
+Applications need their host operating system to work properly. This is as true of a Windows laptop and it is for a Linux server. If your environment is messed up, your applications might not work. Docker eliminates this danger by allowing you to bundle the application up with a new, clean environment. You do this by putting an application and its dependencies into a new Docker container. 
+
+The container has exactly what is needed for that single application to work properly. Containers can be run on any Linux OS that has Docker installed and is guaranteed to work. They can be moved to a different host OS, cloned, copied and edited, almost as if they were a file.
+
+In addition, Docker containers can be networked together allowing them to work as different parts of the same application.
+
+Docker has revolutionised the way that applications are built, tested and deployed, allowing for more automated and reliable procedures.

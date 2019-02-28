@@ -5,19 +5,44 @@
     * [Services](#services)
         * [Reverse Proxy](#reverse-proxy)
         * [Front End](#front-end)
-        * [Back End HTTP Services](#backend-http-services)
-            * [Contenful Cache](#contentful-cache)
+        * [Backend HTTP Services](#backend-http-services)
+            * [Contentful Cache](#contentful-cache)
+            * [Strapi](#strapi)
         * [Backend Database Services](#backend-database-services)
-            * [MySql](#mysql)
-    * [NPM Packages](#npm-packages)
+            * [MySQL](#mysql)
     * [Volumes](#volumes)
-* [Set Up App on Local Host](#set-up-app-on-local-host)
-* [Develop a Feature or Fix a Bug](#develop-a-feature-or-fix-a-bug)
+    * [Modules](#modules)
+* [Development](#development)
+    * [Local Directory Structure](#local-directory-structure)
+    * [Using Volumes in Development](#using-volumes-in-development)
+    * [Set Up Dev App on Local Host](#set-up-dev-app-on-local-host)
+    * [Develop a Feature or Fix a Bug](#develop-a-feature-or-fix-a-bug)
+        * [Assumptions](#assumptions)
+        * [Steps](#steps)
+    * [Working On Multiple Services](#working-on-multiple-services)
+    * [Develop a Feature with an NPM Package](#develop-a-feature-with-an-npm-package)
 * [Testing](#testing)
-* [Develop with NPM packages](#develop-with-npm-packages)
-* [Develop with Multiple services](#develop-with-multiple-services)
-
-
+    * [Set Up Test App on Local Host](#set-up-test-app-on-local-host)
+    * [NPM Package Testing](#npm-package-testing)
+* [Glossary](#glossary)
+    * [Versioning and Tagging](#versioning-and-tagging)
+    * [Semantic Versioning](#semantic-versioning)
+    * [GitFlow Branching Strategy](#gitflow-branching-strategy)
+        * [Master Branch](#master-branch)
+        * [Release Branch](#release-branch)
+        * [Develop Branch](#develop-branch)
+        * [Feature Branch](#feature-branch)
+        * [Bug Branch](#bug-branch)
+        * [Hotfix Branch](#hotfix-branch)
+    * [NPM Packages 2](#npm-packages-2)
+        * [Source Code](#source-code)
+        * [Distribution Code](#distribution-code)
+        * [Security](#security)
+        * [Versioning](#versioning)
+        * [NPM JS](#npm-js)
+        * [NPM Tagging](#npm-tagging)
+        * [NPM Link](#npm-link)
+    * [Docker](#docker)
 ---
 
 ## Architecture
@@ -25,6 +50,7 @@
 This application uses a Docker micro-services architecture. This approach is highly modular but it is relatively complex. It consists of a group of networked Docker containers that are called services. Each service is there to do a specific job.
 
 ### Root
+
 The root is just some config files used to start up the application. It consists of
 
 1. Docker Compose yml files
@@ -38,7 +64,6 @@ The root is just some config files used to start up the application. It consists
 2. One Front End
 3. Many Backend Services
 
-
 #### Reverse Proxy
 
 The reverse proxy sits at the 'front' of the application as a sort of gatekeeper. When an HTTP(S) request arrives on the host computer, it is forwarded to the reverse proxy service in the application. The reverse Proxy then forwards the request to one of the other services, typically based on the URL, domain and/or port.
@@ -51,7 +76,6 @@ The reverse proxy service is a nginx server inside a docker container. It uses t
 
 It can also provide load balancing, caching, compression and other useful utilities.
 
-
 #### Front End
 
 A simple backend Node server which serves a front end React application for ALL requests to the www subdomain. The React app is a single minified HTML file with browser-safe, inline JavaScript and CSS.
@@ -63,8 +87,7 @@ Server Side rendering is not necessary as long as you follow some simple rules:
 1. All URLs must render without asynchronous, client side server calls. Search engines can handle javascript rendering but it won't wait to see what _might_ render
 2. You manage Search Engines' expectations using a sitemap and webmaster tools for each Secrach Engine, such as Google Search Console, to check indexing status and optimize visibility
 
-Even a front end service needs a simple backend web server and it would be quite easy to extend the routing on this web server include API endpoints on /api, whilst serving the front end app on other urls. Mixing the front end app and backend API like this is quite common, but using a Docker micro-services architecture allows us to keep things completely modular, so we prefer to keep the font end as simple as possible and delegate API responsibilities to other services.
-
+Even a front end service needs a simple backend web server and it would be quite easy to extend the routing on this web server include API endpoints on /api, whilst serving the front end app on other urls. Mixing the front end app and backend API like this is quite common, but using a Docker micro-services architecture allows us to keep things completely modular, so we prefer to keep the front end as simple as possible and delegate API responsibilities to other services.
 
 #### Backend HTTP Services
 
@@ -108,14 +131,39 @@ An additional benefit of the cache is that API calls directly to Contentful are 
 
 Data is stored in the MySQL container, not [Volumes](#volumes), as it does NOT need to persist between application restarts (the real data is stored on Contentful's SaaS platform and can easily be re-cached).
 
+##### Strapi
+
+Strapi is an open source headless CMS that allows you to easily create APIs to fetch the content. 
+
+It has advantages and disadvantages over Contenful.
+
+Advatages
+
+1. It's free
+2. Open Source mean complete access to and control over the code base
+3. No need for seperate local cache and API
+4. You can create GraphQL APIs to make powerful API queries possible with a single request. No more over and under fetching.
+
+Disadvantages
+1. Version 3 is still in beta and can be buggy
+2. Less well designed in terms of flexibility and relationships between content
+3. UI is not as slick
+4. Less mature in general
+
 #### Backend Database Services
 
+A MySQL container run from an image taken staight from DockerHub. 
+
+Data can be optionally stored in a directory on the host computer i.e. NOT in the container. This method allows data to  persist between restarts and is achieved by using Docker [Volumes](#volumes) when the constainer is run (the same method that allows code to be edited during development).
+
 ##### MySQL
+
 A MySQL container run from an image taken staight from DockerHub. 
 
 Data can be optionally stored in a directory on the host computer i.e. NOT in the container. This method allows data to  persist between restarts and is achieved by using Docker [Volumes](#volumes) when the constainer is run (the same method that allows code to be edited during development).
 
 ### Volumes
+
 A volume is simply a directory on the host machine that can be accessed from inside a container.
 
 In terms of applilcation architecture, it is used to store data that needs to persist between application restarts i.e. is stored on a hard drive, not in RAM.
@@ -126,10 +174,16 @@ This can also be accomplished using a service from your cloud infrastructure pro
 
 Volumes are also essential when developing using containers. [Using Volumes in Development](#using-volumes-in-development)
 
+### Dependencies
+
+A service will have many dependencies, mostly 3rd party They are part of the 'development architecture' rather than application architecture, as they are added to services during the build process and, as such, are not easily distinguishable from the service whwn the application is running. However, they can play a key role in the modular nature of the application during development, partly because they encourage a modular approach in which code that is re-usable in other applications is identified, separated and published.
+
+---
 
 ## Development
 
 ### Local Directory Structure
+
 > This application and documentation assumes the following directory structure during development
 
 ```
@@ -138,14 +192,15 @@ Volumes are also essential when developing using containers. [Using Volumes in D
 ~/[your dev directory name]/[app name]/service/[service-1-name]
 ~/[your dev directory name]/[app name]/service/[service-2-name]
 ```
+
 ### Using Volumes in Development
 
 * It is very inconvenient to work on code inside a container during development, not least because it is a purely CLI environment
 * A developer can mount a volume from their local machine inside a container, thereby allowing them to work on local code but have that code used within an application container/service
 * Docker Compose provides a convenient way to do this in a yml file
 
+### Set Up Dev App on Local Host
 
-## Set Up App on Local Host (Linux)
 
 > **This is necessary for development AND testing**
 
@@ -242,92 +297,18 @@ Volumes are also essential when developing using containers. [Using Volumes in D
 	> You should see the application working
 
 10. Now you are ready to build a feature, fix a bug or test
-    
 
----
-
-## Develop a Feature or Fix a Bug
+### Develop a Feature or Fix a Bug
 
 Developing a feature involves complex processes for collaboration, building and deployment. Git, GitHub, NPM, NPM JS, Docker, Docker Compose and Docker Hub all play their part 
 
-### Assumptions
+#### Assumptions
+
 * The application is working on your local machine, following the instructions in [Set Up App on Local Host](#set-up-app-on-local-host)
 * The feature only requires work on 1 service. If you your feature requires that you work on more than one service, see [Develop with Multiple services](#develop-with-multiple-services)
 * You don't need to work on any NPM packages. If you do, see [Develop with NPM packages](#develop-with-npm-packages)
 
-
-### Branches
-
-We use GitFlow as our branching strategy for services and modules. https://nvie.com/posts/a-successful-git-branching-model/
-
-- Permanent
-    - master
-    - develop
-
-- Temporary
-    - feature/[story-id]
-    - bug/[task-id]
-    - release/[release-num]
-    - hotfix/[task-id]
-
-#### Master Branch
-
-Master is a permanent branch that reflects the current code in production
-
-Rules
-
-1. Merging to master should only ever happen in 2 situations:
-    1. Standard Release to Production
-        * After all testing has been complete on the release branch, release in merged into master and released to production
-    2. Emergency Bug Fix
-        * When a bug in production is found, a hotfix branch is made from master, the bug is fixed and then merged into master and develop
-2. Only merge on the remote repo
-3. Never use your local master branch
-4. Never branch from master (always from develop)
-5. All merges to master should be conflict free. If this is not true, you are not following the rules.
-
-#### Release
-
-A release branch is a temporary branch created when some work has been completed e.g. at the end of a sprint after several features have been developed and bugs fixed
-
-* Used for regression and UAT testing
-* Should be named `release/[version]`
-* Bugs found during testing are fixed on this branch and merged into develop.
-* When testing is complete, it is merged into master and deleted
-
-#### Develop Branch
-
-`develop` is a permanent branch used for development. Like the master branch it is never deleted and should be viewed as a read only branch, except for merges done in the remote repo
-
-If code is on the develop branch it means, very specifically, that :
-
-1. All features on it have been tested
-2. All code has been code reviewed
-
-Rules
-1. Always start new work by pulling `develop` and branching from that. If there is a conflict then something is very wrong and you should probably get a fresh copy by deleting your local develop branch and pulling from the remote again
-2. Never merge into local develop branch
-3. Never push to remote develop branch
-4. Never delete remote develop branch
-5. Always merge to develop in the remote repo (GitHub) but only after a PR, code review and feature testing
-
-#### Feature Branch
-
-Feature branches are temporarily created for an individual developer to complete a story
-
-* One feature branch per story or task.
-* Should be named `feature/[feature-name][story-id]`. This could include the story id from you issue tracking softward e.g. JIRA
-* Used to make feature builds i.e. Docker images
-* Should be deleted after use
-    * After a feature build has been tested, the branch is merged into develop in GitHub and the branch can be deleted, both locally and on GitHub
-
-#### Bug
-
-Same as a feature branch but used to fix a bug, rather than build a new feature
-* Should be named `bug/[bug-name][bug-id]`
-
-
-### Steps
+#### Steps
 
 1. Get the code for the service you need to work on
 
@@ -474,184 +455,29 @@ Same as a feature branch but used to fix a bug, rather than build a new feature
 12. Commit and push
 13. Instruct tester to test the feature using `docker-compose.test.yml` on branch `feature/[feature-name]`
 
----
 ### Working On Multiple Services
 
 Working on multiple services for a single story is no different from working on a single service but for each service you must ensure that you :
 
 1. During development enabled the `volume` in docker-compose.dev.yml
 2. For testing, make sure you change the tag of the appropriate image name in docker-compose.test.yml 
----
-### Working with NPM packages
 
-NPM packages are published modules that can be added as a dependency to an application (or another NPM package) by listing it in "dependencies" in package.json. 
-
-Therefore, an NPM package will be stored in 2 locations on the internet:
-
-1. A Git repository
-    - Purpose
-        - Development
-    - Contains
-        - Source code
-        - package.json including devDependencies
-        - LICENCE and README.md
-        - Webpack config
-2. An NPM repository
-    - Purpose
-        - Distribution
-    - Contains
-        - Source code
-        - package.json NOT including devDependencies
-        - LICENCE and README.md
-        - Distribution code (created at build time)
-        - SourceMap file for debugging (created at build time)
-
-#### Source Code
-
-- Uncompiled
-- Usually not browser safe
-- Not necessarily Node safe
-- Can use latest ES features that might not work in the run time environment
-- Needs to be compiled to guarantee it will work
-
-#### Distribution Code
-
-- Compiled 
-- Browser safe
-- Node safe
-- Needs to be built before publishing
-- Can be debugged if a SourceMap file was generated during the build. 
-
-#### Security
-
-- Malicious code can be hidden distribution code because it is compiled and not human readable
-- 3rd parties can and should view distribution code with suspicion and may prefer to use the source code instead and do their own compilation
-
-#### Versioning
-
-- The version of an NPM package is found in package.json
-- It should follow the Semantic Versioning format
-
-#### Publishing to NPM JS
-
-In order to be useful, NPM packages must be published to a repository. They can be published to npmjs.com or they _can_ be published to your own repository using repository manager software such as Nexus. We currently only use npmjs.com
-
-NPM packages on npmjs.com can be public or private.
-```
-Auth Token Required?
-==================================================================
-
-Feature                             Public          Private
-------------------------------------------------------------------
-To Install                          No              Yes
-To Publish                          Yes             Yes
-```
-
-NPM packages can be owned by a individual or an organisation. 
-```
-Ownership
-==================================================================
-                                        Package owned by
-Feature                             Individual      Organisation
-------------------------------------------------------------------
-Publishable by many individuals     No              Yes         
-Packages can be private             No              Yes
-```     
-Our packages are owned by an organisation and are private. Therfore, you will have to do the following to install or publish them:
-
-1. Have an npmjs.com account
-2. Ask us to add your account to the organisation and give you permission to install and publish
-3. Login to your account on the command line once. This will generate a token which is stored in an ~/.npmrc file. You won't be required to login again as you will be authenticated by the stored token for future installations or publications (unless you change your npmjs.com password).
- 
-#### NPM Tagging
-
-Tagging is a useful way to indicate the intended use of a package version.
-
-NPM packages need to be published during development. How do you stop a development versions of published packages being used accidentally? Tagging is also a solution to this problem.
-
-- Tags indicate the purpose of a specific version 
-	- e.g. develop, test, latest
-- Tags cannot be used on more than one version. It is supposed to indicate the the most recent version of something 
-	- e.g. if 0.0.10 is tagged as 'develop', it indicates that it is the most recently published development version of the package
-- However, a version can have many tags
-	- e.g. if 0.0.10 is tagged as 'develop' and 'test', it indicates that it is the most recently published development and test version of the package.
-- 'latest' tag
-	- 'latest' is a special tag. 
-		- It is the only tag that is used by NPM
-		- It means 'most recent production version'
-	- By default, NPM tags everything with 'latest' unless you tag it with something else. 
-	- The package version tagged with 'latest' will be installed automatically unless the user specifies a version or a tag
-- Other tags
-	- The main purpose for using other tags is to publish a new version that is NOT tagged as 'latest' and will, therefore, NOT be installed by automatically, either when using ^ or ~ when specifying dependency versions in package.json or when installing using the command line
-	- This is useful for pre-release versions of a package that need to be published for development or testing.
-
-#### NPM Package Development
+### Develop a feature with an NPM package
 
 If you need to work with an NPM package the workflow gets a bit more complicated as the code is not in the repo for the service. It is a module used by the service, not part of the service _per se_.
 
-NPM packages are designed to be used by many services or applications. They should be useful _in general_ and are not supposed to be application specific. Therefore, if you need to work with an NPM package as part of a feature story it is probably worth splitting the working on the NPM package into a seperate task, to be completed before the work on the feature story begins.
+If you need to work with an NPM package as part of a feature story it is probably worth splitting the working on the NPM package into a seperate task, to be completed before the work on the feature story begins.
 
 To complete the feature story you might not need to change a service at all, other than to change the version of the NPM package it uses.
 
+See [NPM Packages](#npm-packages)
 
-
-##### NPM Link
-
-During development you will probably need to use NPM Link. This is a feature of NPM that allows you to use a local development copy of the NPM package inside an app, instead of the published version. In other words, after you have installed dependencies in an NPM app, you can replace one of those dependencies (in `./node_modules`) with a local development package that you cloned from GitHub and are using for development.
-
-To make matters more confusing, you are also using a Docker Volume during development
-
-> NPM Link uses symlinks to temporarily replace the npm package in `/path/to/app/node_modules` with the one in `/path/to/local/dev/npm/package/`
-
-The process is achieved in 2 steps
-
-1. Link the local development package to NPM's global install directory
-    ```
-    cd /path/to/local/dev/npm/package/
-    npm link
-    ```
-    This step creates a symbolic link in the NPM global install directory that points to the local development package. More specifically, a symbolic link is create in `[prefix]/lib/node_modules/[package-name]` that points to `/path/to/local/dev/npm/package/`
-
-    > The NPM global install directory is where NPM installs packages when you use the -g flag i.e. packages that are used on the command line rather than used as a dependency in an application. It can be located in different places according to your OS and if you are using Node Version Manager (NVM) but takes the form `[prefix]/lib/node_modules/[package-name]`, with `{prefix}` being the part that varies. 
-
-    > On Ubuntu Linux, the location is either probably `/usr/local/lib/node_modules/[package-name]` or, if you are using NVM, `~/.nvm/versions/node/[version-number]/lib/node_modules`
-2. Link NPM's global install directory to the application
-    ```
-    cd /path/to/app/
-    npm link [package-name]
-    ```
-    Creates Symbolic link in `[prefix]/lib/node_modules/` that points to `/path/to/app/node_modules/[package-name]`
-
-To make matters more confusing, you are also [Using Volumes in Development](#using-volumes-in-development). You have a NPM dev package linked to an app. The app is inside a volume. The volume is linked to a directory inside a service container. See figure 1 (To Do)
-
-> In fact NPM Link has similar utility to using a Docker Volume. In the case of both NPM Link And Docker Volumes, you are asking a parent 'thing' to temporarily replace some child code with a newer, development version of the same code on your local machine
-```
-Method          Parent              Child
--------------------------------------------------------
-Docker volume   Docker container    JS app code
-NPM Link        JS app Code         JS NPM dependency
-```
-
-
-#### NPM Package Testing. 
-
-NPM modules need to be tested as individual entities as they are intended for general use in many applications. However, ideally they would also have regression testing in all apps that use it
-
-The following testing can be done for an NPM package
-
-1. Feature testing during development
-2. Regression testing for each service/application that uses the new version of the package.
-2. Unit tests for the package
-3. Demo application for testing possible use cases for the package
-
-
-#### Steps to develop a feature on an NPM package
 
 Summary:
 
 1. Work on the package
-2. Use the new version of the package in the service
-3. Use the new version of the service in the root app
+2. Change the version of the package in the service
+3. Change the version of the service in the root app's test yml file
 
 See [NPM Package Development](#npm-package-development)
 
@@ -734,7 +560,7 @@ See [NPM Package Development](#npm-package-development)
         ```
         > Tagging a a version of an npm module during development prevents it from being installed by default. The default tag is 'latest' which indicates that it is the latest production ready version. By using a different tag you are saying "This version is NOT production ready" and NPM will not install it unless explicitly asked to do so (in package.json or CLI)
 
-2. Use the new version of the package in the service
+2. Change the version of the package in the service
     1. Create feature branch for the service.
         ```
         cd ~/[your dev directory name]/[app-name]/service/[service-name]
@@ -743,12 +569,11 @@ See [NPM Package Development](#npm-package-development)
         git branch feature/[feature-name]
         git checkout feature/[feature-name]
         ```
-
     2. Bump the service version, according to Semantic Versioning principles, and git commit the change `~/[your dev directory name]/[app-name]/service/[service-name]/package.json` bump dependency version to be same as version in `~/[your dev directory name]/[app-name]/package/[package-name]/package.json` e.g. `^1.1.0`
     3. Push service feature branch and proceed as if this was a normal service feature development.
     4. When you are satisfied that this package has had enough testing, re-publish with the tag `latest`
 
-3. Use the new version of the service in the root app
+3. Change the version of the service in the root app's test yml file
     1. Create a new feature branch from master
         ```
         cd ~/[your dev directory name]/[app-name]/root
@@ -758,14 +583,37 @@ See [NPM Package Development](#npm-package-development)
         git checkout feature/[feature-name]
         ```
         - It is fine to branch Root from master as it is, in essence, just some config code that rarely changes i.e. it isn't complicated and doesn't need a full branching strategy like services and NPM packages
-    2. In `docker-compose.test.yml` change the image tag of the of the service or services you have changes e.g. 
-        ```
+    2. In `docker-compose.test.yml` change the image tag of the of the service or services that need to be feature tested e.g. 
         
-        ``` 
+        Change From
+        ```
+        front-end:
+            image: natdarke/robot-service-front-end:develop
+        ```
+        To
+        ```
+        front-end:
+            image: natdarke/robot-service-front-end:feature-[feature-name]
+        ```
+    3. Push to remote
+        ```
+        cd ~/[your dev directory name]/[app-name]/root
+        git push origin feature/[feature-name]
+        ```
+The app is now ready to be tested. The tester must pull the feature branch and use the `docker-compose.test.yml` file with docker compose e.g. `sudo docker-compose -f docker-compose.test.yml up` 
 
+## Testing
 
+### Set Up Test App on Local Host
 
-#### Versioning and Tagging
+### NPM Package Testing
+
+---
+
+## Glossary
+
+### Versioning and Tagging
+
 - Tagging is a concept used in Git, NPM, Docker and other systems to add semantic value to versioning.
 - Version Number vs Tag
     - Version Number
@@ -802,7 +650,7 @@ See [NPM Package Development](#npm-package-development)
         - The version number is the build id
 
 
-## Semantic Versioning
+### Semantic Versioning
 
 Format example 	- 1.1.1 (major release, minor release, patch release)
 ```
@@ -833,21 +681,260 @@ There are many ways to specifiy which version of a package should be used in pac
 ```
 
 
+### GitFlow Branching Strategy
 
-## Testing
+We use GitFlow as our branching strategy for services and modules. https://nvie.com/posts/a-successful-git-branching-model/
 
-### Unit Testing
+* Permanent
+    * master
+    * develop
+* Temporary
+    * feature/[story-id]
+    * bug/[task-id]
+    * release/[release-num]
+    * hotfix/[task-id]
 
-### Feature Testing
+#### Master Branch
 
-### Smoke Testing
+Master is a permanent branch that reflects the current code in production
 
-### 
+Rules
+
+1. Merging to master should only ever happen in 2 situations:
+    1. Standard Release to Production
+        * After all testing has been complete on the release branch, release in merged into master and released to production
+    2. Emergency Bug Fix
+        * When a bug in production is found, a hotfix branch is made from master, the bug is fixed and then merged into master and develop
+2. Only merge on the remote repo
+3. Never use your local master branch
+4. Never branch from master (always from develop)
+5. All merges to master should be conflict free. If this is not true, you are not following the rules.
+
+#### Release Branch
+
+A release branch is a temporary branch created when some work has been completed e.g. at the end of a sprint after several features have been developed and bugs fixed
+
+* Used for regression and UAT testing
+* Should be named `release/[version]`
+* Bugs found during testing are fixed on this branch and merged into develop.
+* When testing is complete, it is merged into master and deleted
+
+#### Develop Branch
+
+`develop` is a permanent branch used for development. Like the master branch it is never deleted and should be viewed as a read only branch, except for merges done in the remote repo
+
+If code is on the develop branch it means, very specifically, that :
+
+1. All features on it have been tested
+2. All code has been code reviewed
+
+Rules
+1. Always start new work by pulling `develop` and branching from that. If there is a conflict then something is very wrong and you should probably get a fresh copy by deleting your local develop branch and pulling from the remote again
+2. Never merge into local develop branch
+3. Never push to remote develop branch
+4. Never delete remote develop branch
+5. Always merge to develop in the remote repo (GitHub) but only after a PR, code review and feature testing
+
+#### Feature Branch
+
+Feature branches are temporarily created for an individual developer to complete a story
+
+* One feature branch per story or task.
+* Should be named `feature/[feature-name][story-id]`. This could include the story id from you issue tracking softward e.g. JIRA
+* Used to make feature builds i.e. Docker images
+* Should be deleted after use
+    * After a feature build has been tested, the branch is merged into develop in GitHub and the branch can be deleted, both locally and on GitHub
+
+#### Bug Branch
+
+Same as a feature branch but used to fix a bug, rather than build a new feature
+* Should be named `bug/[bug-name][bug-id]`
+
+#### Hotfix Branch
+
+When there is a bug in production code, you branch from master, fix the bug and merge back into master and develop
+* Should be named `hotfix/[bug-name][bug-id]`
+
+### NPM
+
+NPM is a package manager for JavaScript. It was originally designed for use with Node but it can also be used with client side JS. It is a tool for organising packages within an application, and for distributing packages in public or private.
+
+#### JS Modules
+
+A JS module is a single file that can imported into other JS files. JS modules tend to comprised of code that can be used in many places within one specific application.
+
+More specifically, a module is a single JavaScript file that has some reasonable functionality and exposes some of its parts (functions, objects, or primitive values) by using `module.exports`. Exported parts are available to other JavaScript files by using `require` or `import`. Exact implementations vary depending if you are using server side or client side code and if you are using a module bundler such as Webpack. Modules are part of the JavaScript/ECMAScript standard.
+
+#### NPM Packages
+
+An NPM package is a collection of JS modules that can be shared or distributed using NPM. It comprises of a directory with one or more modules inside of it and a package.json file which has metadata about the package that can be understood by NPM. 
+
+Using an NPM package is the same as using a module i.e. with `require` or `import` except you use the package name, not a file path.
+
+All JavaScript files in a package are JS modules except for the 'entry point' file whose path set in `package.json` as `main`. The main file is a standard JS file, not a module, because it doesn't need to export anything. NPM packages are comprised of JavaScript but part of NPM and NOT part of the JavaScript/ECMAScript standard.
+
+##### Dependencies
+A dependency is a package used by another package. They are listed in `package.json` as `dependencies`. Dependencies are stored seperately from each other and only combined as the result of a `npm install` command at which point they are downloaded and placed in a `node_modules` directory.
+
+A dependency can be mocked using `npm link` ([NPM Link](#npm-link)). This can be useful during development. 
+
+Nested dependencies are dependendencies within dependencies. `npm install` will also install nested dependencies.
+
+##### Package Use
+
+NPM packages tend to be either whole applications that are NOT shared using NPM, or useful tools that are useful _in general_, are shared using NPM and used in other packages. I call these 'application packages' and 'tool packages'.
+
+* Application Packages
+    * Some packages are not meant to be used by other packages. Typically, this would be a package that forms the spine of an application and sits at the top of the dependency chain i.e. it HAS dependencies but is not a dependency itself. It is not published to an NPM repository because it is not intended to be installed as a dependency.
+
+* Tool Packages 
+    * Tool packages are meant to be published to [NPM JS](#npm-js) (or some other NPM repository) and installed in other packages. They should be usable in any other package. Tool packages can be published for general consumption or can from the basis of your own private library.
+
+##### Storage
+
+NPM packages can be stored in 2 locations on the internet. 
+
+1. A Git repository
+    - Used by
+        - Application packages 
+        - Tool packages
+    - Purpose
+        - Development
+    - Contains
+        - [Source code](#source-code)
+        - package.json including devDependencies
+        - LICENCE and README.md
+        - Webpack config
+2. An NPM repository (see (NPM JS)[#npm-js])
+    - Used by
+        - Tool packages
+    - Purpose
+        - Distribution
+    - Contains
+        - [Source code](#source-code) and/or [distribution code](#distribution-code) (created at build time)
+        - package.json NOT including devDependencies
+        - LICENCE and README.md
+        - SourceMap file for debugging (created at build time)
+
+##### Source Code
+
+- Uncompiled
+- Usually not browser safe
+- Not necessarily Node safe
+- Can use latest ES features that might not work in the run time environment
+- Needs to be compiled to guarantee it will work in production
+- Can be debugged
+- Security and trust
+    - Malicious code is hard to hide because the code is human readable
+    - 3rd parties are more likely to trust source code
+
+##### Distribution Code
+
+- Compiled 
+- Browser safe
+- Node safe
+- Needs to be built before publishing
+- Can be debugged if a SourceMap file was generated during the build
+- Security and trust
+    - Malicious code can be hidden distribution code because it is compiled and not human readable
+    - 3rd parties can and should view distribution code with suspicion and may prefer to use the source code instead and do their own compilation
+
+##### Versioning
+
+- The version of an NPM package is found in package.json
+- It should follow the [Semantic Versioning](#semantic-versioning) format
 
 
-## Deploy to Production
+#### NPM JS
 
-## To Do
-* Dynamic virtual host names. Has to work per domain
-* Databases for Strapi must be seperated from the application and e.g mounted as volumes
+In order to be useful, NPM packages must be published to a repository. They can be published to npmjs.com or they _can_ be published to your own repository using repository manager software such as Nexus. We currently only use npmjs.com
+
+NPM packages on npmjs.com can be public or private.
+```
+Auth Token Required?
+==================================================================
+
+Feature                             Public          Private
+------------------------------------------------------------------
+To Install                          No              Yes
+To Publish                          Yes             Yes
+```
+
+NPM packages can be owned by a individual or an organisation. 
+```
+Ownership
+==================================================================
+                                        Package owned by
+Feature                             Individual      Organisation
+------------------------------------------------------------------
+Publishable by many individuals     No              Yes         
+Packages can be private             No              Yes
+```     
+Our packages are owned by an organisation and are private. Therfore, you will have to do the following to install or publish them:
+
+1. Have an npmjs.com account
+2. Ask us to add your account to the organisation and give you permission to install and publish
+3. Login to your account on the command line once. This will generate a token which is stored in an ~/.npmrc file. You won't be required to login again as you will be authenticated by the stored token for future installations or publications (unless you change your npmjs.com password).
+
+#### NPM Tagging
+
+Tagging is a useful way to indicate the intended use of a package version.
+
+NPM packages need to be published during development. How do you stop a development versions of published packages being used accidentally? Tagging is also a solution to this problem.
+
+- Tags indicate the purpose of a specific version 
+	- e.g. develop, test, latest
+- Tags cannot be used on more than one version. It is supposed to indicate the the most recent version of something 
+	- e.g. if 0.0.10 is tagged as 'develop', it indicates that it is the most recently published development version of the package
+- However, a version can have many tags
+	- e.g. if 0.0.10 is tagged as 'develop' and 'test', it indicates that it is the most recently published development and test version of the package.
+- 'latest' tag
+	- 'latest' is a special tag. 
+		- It is the only tag that is used by NPM
+		- It means 'most recent production version'
+	- By default, NPM tags everything with 'latest' unless you tag it with something else. 
+	- The package version tagged with 'latest' will be installed automatically unless the user specifies a version or a tag
+- Other tags
+	- The main purpose for using other tags is to publish a new version that is NOT tagged as 'latest' and will, therefore, NOT be installed by automatically, either when using ^ or ~ when specifying dependency versions in package.json or when installing using the command line
+	- This is useful for pre-release versions of a package that need to be published for development or testing.
+
+#### NPM Link
+
+During development you will probably need to use NPM Link. This is a feature of NPM that allows you to use a local development copy of the NPM package inside an app, instead of the published version. In other words, after you have installed dependencies in an NPM app, you can replace one of those dependencies (in `./node_modules`) with a local development package that you cloned from GitHub and are using for development.
+
+To make matters more confusing, you are also using a Docker Volume during development
+
+> NPM Link uses symlinks to temporarily replace the npm package in `/path/to/app/node_modules` with the one in `/path/to/local/dev/npm/package/`
+
+The process is achieved in 2 steps
+
+1. Link the local development package to NPM's global install directory
+    ```
+    cd /path/to/local/dev/npm/package/
+    npm link
+    ```
+    This step creates a symbolic link in the NPM global install directory that points to the local development package. More specifically, a symbolic link is create in `[prefix]/lib/node_modules/[package-name]` that points to `/path/to/local/dev/npm/package/`
+
+    > The NPM global install directory is where NPM installs packages when you use the -g flag i.e. packages that are used on the command line rather than used as a dependency in an application. It can be located in different places according to your OS and if you are using Node Version Manager (NVM) but takes the form `[prefix]/lib/node_modules/[package-name]`, with `{prefix}` being the part that varies. 
+
+    > On Ubuntu Linux, the location is either probably `/usr/local/lib/node_modules/[package-name]` or, if you are using NVM, `~/.nvm/versions/node/[version-number]/lib/node_modules`
+2. Link NPM's global install directory to the application
+    ```
+    cd /path/to/app/
+    npm link [package-name]
+    ```
+    Creates Symbolic link in `[prefix]/lib/node_modules/` that points to `/path/to/app/node_modules/[package-name]`
+
+To make matters more confusing, you are also [Using Volumes in Development](#using-volumes-in-development). You have a NPM dev package linked to an app. The app is inside a volume. The volume is linked to a directory inside a service container. See figure 1 (To Do)
+
+> In fact NPM Link has similar utility to using a Docker Volume. In the case of both NPM Link And Docker Volumes, you are asking a parent 'thing' to temporarily replace some child code with a newer, development version of the same code on your local machine
+```
+Method          Parent              Child
+-------------------------------------------------------
+Docker volume   Docker container    JS app code
+NPM Link        JS app Code         JS NPM dependency
+```
+
+
+### Docker
 

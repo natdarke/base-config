@@ -11,16 +11,14 @@
         * [Backend Database Services](#backend-database-services)
             * [MySQL](#mysql)
     * [Volumes](#volumes)
-    * [Modules](#modules)
+    * [Code Library](#code-library)
 * [Development](#development)
     * [Local Directory Structure](#local-directory-structure)
     * [Using Volumes in Development](#using-volumes-in-development)
-    * [Set Up Dev App on Local Host](#set-up-dev-app-on-local-host)
+    * [Set Up App on Local Host](#set-up-app-on-local-host)
     * [Develop a Feature or Fix a Bug](#develop-a-feature-or-fix-a-bug)
-        * [Assumptions](#assumptions)
-        * [Steps](#steps)
     * [Working On Multiple Services](#working-on-multiple-services)
-    * [Develop a Feature with an NPM Package](#develop-a-feature-with-an-npm-package)
+    * [Working with Dependency Packages](#working-with-dependency-packages)
 * [Testing](#testing)
     * [Set Up Test App on Local Host](#set-up-test-app-on-local-host)
     * [NPM Package Testing](#npm-package-testing)
@@ -34,7 +32,7 @@
         * [Feature Branch](#feature-branch)
         * [Bug Branch](#bug-branch)
         * [Hotfix Branch](#hotfix-branch)
-    * [NPM Packages 2](#npm-packages-2)
+    * [NPM Packages](#npm-packages)
         * [Source Code](#source-code)
         * [Distribution Code](#distribution-code)
         * [Security](#security)
@@ -174,9 +172,14 @@ This can also be accomplished using a service from your cloud infrastructure pro
 
 Volumes are also essential when developing using containers. [Using Volumes in Development](#using-volumes-in-development)
 
-### Dependencies
 
-A service will have many dependencies, mostly 3rd party They are part of the 'development architecture' rather than application architecture, as they are added to services during the build process and, as such, are not easily distinguishable from the service whwn the application is running. However, they can play a key role in the modular nature of the application during development, partly because they encourage a modular approach in which code that is re-usable in other applications is identified, separated and published.
+
+
+### Code Library
+
+Code that is re-usable across more than one service is stored in a private library of JavaScript [NPM](#npm) packages. Source code for these packages is stored on GitHub and distribution code is published to npmjs.com.
+
+You might say that these NPM packages are part of the 'development architecture' rather than application architecture, as they are added to services during the build process and, as such, are not easily distinguishable from the service whwn the application is running.
 
 ---
 
@@ -199,11 +202,9 @@ A service will have many dependencies, mostly 3rd party They are part of the 'de
 * A developer can mount a volume from their local machine inside a container, thereby allowing them to work on local code but have that code used within an application container/service
 * Docker Compose provides a convenient way to do this in a yml file
 
-### Set Up Dev App on Local Host
+### Set Up App on Local Host
 
-
-> **This is necessary for development AND testing**
-
+> This process can also be used for testing
 
 1. Install and Configure Git
     ```
@@ -302,13 +303,11 @@ A service will have many dependencies, mostly 3rd party They are part of the 'de
 
 Developing a feature involves complex processes for collaboration, building and deployment. Git, GitHub, NPM, NPM JS, Docker, Docker Compose and Docker Hub all play their part 
 
-#### Assumptions
+* Assumptions
 
-* The application is working on your local machine, following the instructions in [Set Up App on Local Host](#set-up-app-on-local-host)
-* The feature only requires work on 1 service. If you your feature requires that you work on more than one service, see [Develop with Multiple services](#develop-with-multiple-services)
-* You don't need to work on any NPM packages. If you do, see [Develop with NPM packages](#develop-with-npm-packages)
-
-#### Steps
+    * The application is working on your local machine, following the instructions in [Set Up Dev App on Local Host](#set-up-dev-app-on-local-host)
+    * The feature only requires work on 1 service. If you your feature requires that you work on more than one service, see [Develop with Multiple services](#develop-with-multiple-services)
+    * You don't need to work on any NPM packages. If you do, see [Develop with NPM packages](#develop-with-npm-packages)
 
 1. Get the code for the service you need to work on
 
@@ -462,30 +461,29 @@ Working on multiple services for a single story is no different from working on 
 1. During development enabled the `volume` in docker-compose.dev.yml
 2. For testing, make sure you change the tag of the appropriate image name in docker-compose.test.yml 
 
-### Develop a feature with an NPM package
+### Working with Dependency Packages
 
-If you need to work with an NPM package the workflow gets a bit more complicated as the code is not in the repo for the service. It is a module used by the service, not part of the service _per se_.
+A 'dependency package' is an NPM package that is used by a JavaScript service. 
 
-If you need to work with an NPM package as part of a feature story it is probably worth splitting the working on the NPM package into a seperate task, to be completed before the work on the feature story begins.
+In fact, this is more of a convenient way to think than an accurate description. A 'dependency package' is, actually, an NPM package that is used by another NPM package. JavaScript services are, essentially, an NPM 'root package' with a Dockerfile. To understand more read [NPM](#npm).
 
-To complete the feature story you might not need to change a service at all, other than to change the version of the NPM package it uses.
+If you need to work with a 'dependency package' the workflow gets a bit more complicated as the code is not in the repo for the service. It is an [NPM](#npm) package used by the service, not part of the service _per se_.
 
-See [NPM Packages](#npm-packages)
+If feature story requires some work on a 'dependency package' it is probably best to split the work on the 'dependency package'into a seperate task, to be completed before the work on the feature story begins. This is because 'dependency packages' are meant to be used by more than one service.
 
+To complete the feature story you might not need to change a service at all, other than to change the version of the 'dependency package' it uses.
 
 Summary:
 
-1. Work on the package
-2. Change the version of the package in the service
+1. Work on the 'dependency package'
+2. Change the version of the 'dependency package' in the service
 3. Change the version of the service in the root app's test yml file
-
-See [NPM Package Development](#npm-package-development)
 
 ---
 
-1. Work on the package
+1. Work on the 'dependency package'
     
-    1. Clone package repo 
+    1. Clone 'dependency package' repo 
         ```
         mkdir ~/[your dev directory name]/[app-name]/package/[package-name]/
         
@@ -494,7 +492,7 @@ See [NPM Package Development](#npm-package-development)
         git clone git@github.com:natdarke/[package-name].git
         ```
 
-    2. In the package, branch from `develop` to `feature/[feature-name]`
+    2. In the 'dependency package', branch from `develop` to `feature/[feature-name]`
         ```
         cd ~/[your dev directory name]/[app-name]/service/[service-name]/node_modules_linked/[package-name]
 
@@ -506,7 +504,7 @@ See [NPM Package Development](#npm-package-development)
 
         git checkout feature/[feature-name]
         ```
-    3. Link the package to the service using `npm link`
+    3. Link the 'dependency package' to the service using `npm link`
         See [NPM Link](#npm-link)
         ```
         cd ~/[your dev directory name]/[app-name]/package/[package-name]/
@@ -517,12 +515,12 @@ See [NPM Package Development](#npm-package-development)
 
         npm link [package-name]
         ```
-        > This allows you to work on the package code during development and see the changes you make reflected in the service. 
+        > This allows you to work on the 'dependency package' code during development and see the changes you make reflected in the service. 
         
 
     5. Work on `~/[your dev directory name]/[app-name]/package/[package-name]/` with git as per normal
 
-    6. Bump the package version, according to [Semantic Versioning](#semantic-versioning) principles, and git commit the change
+    6. Bump the 'dependency package' version, according to [Semantic Versioning](#semantic-versioning) principles, and git commit the change
 
         e.g. change 
         ```
@@ -547,7 +545,7 @@ See [NPM Package Development](#npm-package-development)
 
     9. Make any necessary changes from the code review and re-commit, push and request code review. Do NOT re-bump the version, as versions indicate a release
 
-    10. Publish the package from the `feature/[feature-name]` branch with tag `feature-[feature-name]`
+    10. Publish the 'dependency package' from the `feature/[feature-name]` branch with tag `feature-[feature-name]`
         ```
         npm login
         ```
@@ -558,9 +556,9 @@ See [NPM Package Development](#npm-package-development)
 
         npm publish --tag feature-[feature-name]
         ```
-        > Tagging a a version of an npm module during development prevents it from being installed by default. The default tag is 'latest' which indicates that it is the latest production ready version. By using a different tag you are saying "This version is NOT production ready" and NPM will not install it unless explicitly asked to do so (in package.json or CLI)
+        > Tagging a version of an npm package during development prevents it from being installed by default. The default tag is 'latest' which indicates that it is the latest production ready version. By using a different tag you are saying "This version is NOT production ready" and NPM will not install it unless explicitly asked to do so (in package.json or CLI)
 
-2. Change the version of the package in the service
+2. Change the version of the 'dependency package' in the service
     1. Create feature branch for the service.
         ```
         cd ~/[your dev directory name]/[app-name]/service/[service-name]
@@ -571,7 +569,7 @@ See [NPM Package Development](#npm-package-development)
         ```
     2. Bump the service version, according to Semantic Versioning principles, and git commit the change `~/[your dev directory name]/[app-name]/service/[service-name]/package.json` bump dependency version to be same as version in `~/[your dev directory name]/[app-name]/package/[package-name]/package.json` e.g. `^1.1.0`
     3. Push service feature branch and proceed as if this was a normal service feature development.
-    4. When you are satisfied that this package has had enough testing, re-publish with the tag `latest`
+    4. When you are satisfied that this 'dependency package' has had enough testing, re-publish with the tag `latest`
 
 3. Change the version of the service in the root app's test yml file
     1. Create a new feature branch from master
@@ -582,7 +580,8 @@ See [NPM Package Development](#npm-package-development)
         git branch feature/[feature-name]
         git checkout feature/[feature-name]
         ```
-        - It is fine to branch Root from master as it is, in essence, just some config code that rarely changes i.e. it isn't complicated and doesn't need a full branching strategy like services and NPM packages
+        - Root doesn't need a full branching strategy because is small and changes rarely. Therefore, branching from master is acceptable.
+
     2. In `docker-compose.test.yml` change the image tag of the of the service or services that need to be feature tested e.g. 
         
         Change From
@@ -605,6 +604,8 @@ The app is now ready to be tested. The tester must pull the feature branch and u
 ## Testing
 
 ### Set Up Test App on Local Host
+
+Follow the instructions here: [Set Up App on Local Host](#set-up-app-on-local-host)
 
 ### NPM Package Testing
 
@@ -782,13 +783,20 @@ Nested dependencies are dependendencies within dependencies. `npm install` will 
 
 ##### Package Use
 
-NPM packages tend to be either whole applications that are NOT shared using NPM, or useful tools that are useful _in general_, are shared using NPM and used in other packages. I call these 'application packages' and 'tool packages'.
+NPM packages tend to be either whole applications that are NOT shared using NPM, or useful tools that are useful _in general_, are shared using NPM and used in other packages. I call these 'root packages' and 'dependeny packages'.
 
-* Application Packages
-    * Some packages are not meant to be used by other packages. Typically, this would be a package that forms the spine of an application and sits at the top of the dependency chain i.e. it HAS dependencies but is not a dependency itself. It is not published to an NPM repository because it is not intended to be installed as a dependency.
+* Root Packages
+    * Not a dependency
+    * Has dependencies
+    * Typically, this would be a package that forms the spine of an application and would have many dependencies
+    * NOT published to an NPM repository as it is not intended to be installed as a dependency.
+    * A JavaScript service is, basically, a docker container running a 'Root Package'. The git repo contains a Dockerfile and the package code
 
-* Tool Packages 
-    * Tool packages are meant to be published to [NPM JS](#npm-js) (or some other NPM repository) and installed in other packages. They should be usable in any other package. Tool packages can be published for general consumption or can from the basis of your own private library.
+* Dependency Packages 
+    * Intended to be published to [NPM JS](#npm-js) (or some other NPM repository) and installed in other packages. 
+    * Should be usable in any other package. 
+    * Can be published pubicly, for use by anyone
+    * Can be published privately, only for use by your organisation 
 
 ##### Storage
 
@@ -796,7 +804,8 @@ NPM packages can be stored in 2 locations on the internet.
 
 1. A Git repository
     - Used by
-        - Application packages 
+        - Root Packages
+            - The Git repo for a JS service includes the Root Package code and a Dockerfile
         - Tool packages
     - Purpose
         - Development

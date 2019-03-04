@@ -947,12 +947,216 @@ NPM Link        JS app Code         JS NPM dependency
 
 ### Docker
 
-Docker is an application that allows the creation and management of containers. Containers are vitual linux operating systems which can run applications and store data but don't have a kernal. They can do this because they use the kernal of the host operating system which makes them resource efficient. Docker can run many containers at the same time, all of them using the same kernal of their host OS.
+Docker is an application that allows the creation and management of containers.
 
-Applications need their host operating system to work properly. This is as true of a Windows laptop and it is for a Linux server. If your environment is messed up, your applications might not work. Docker eliminates this danger by allowing you to bundle the application up with a new, clean environment. You do this by putting an application and its dependencies into a new Docker container. 
+#### Containers
+
+An operating system is divided between a kernal for core functionality, and a 'user space' for applications.
+
+Containers are virtual linux operating systems which use the kernal of the host operating system but have their own user space and applications.
+
+Docker is run on the host OS, and can run many containers at the same time, all of them using the kernal of the host OS.
+
+Applications need their host operating system to work properly. This is as true of a Windows laptop and it is for a Linux server. If your environment is messed up, your applications might not work. Docker eliminates this danger by allowing you to bundle the application up with a new, clean 'environment' aka container. You do this by putting an application and its dependencies into a new Docker container. 
 
 The container has exactly what is needed for that single application to work properly. Containers can be run on any Linux OS that has Docker installed and is guaranteed to work. They can be moved to a different host OS, cloned, copied and edited, almost as if they were a file.
 
-In addition, Docker containers can be networked together allowing them to work as different parts of the same application.
+#### Images
+
+Docker images are templates that containers can be created from. Images can be stored locally or published to a repository such as Docker Hub. There are thousands of public Docker Images available to use on Dockerhub.
+
+#### Images vs containers
+
+An image is very similar to a container. You can think of an image as a snapshot of a container. A good analogy to images/containers is a file. Images are like a closed file. When you run a container it is like opening a file. A file's Save As command is analogous to Docker commit. The analogy breaks down when it comes to stopping and re-starting containers. 
+
+#### Commit vs Dockerfile
+
+You can build a Docker image in 2 ways
+
+1. Dockerfile: A list of commands to create the image
+2. Docker commit: Takes a snapshot of a running container and creates an image from it.
+	1. Run a container from an image
+	2. Make changes to the container using an interactive shell
+	3. Use Docker commit to "Save As" a new image
+
+Generally, it is much more felexible and powerful to create images from Dockerfiles as all steps in creating the image are listed and can, thefore, be understood, edited, re-used etc
+
+#### Build
+
+Build means to create a Docker image using the instructions contained in a Dockerfile.
+
+Creates a Docker Image stored locally :
+```
+cd /path/to/Dockerfile
+sudo docker build -t namespace/name .
+```
+View all images :
+```
+sudo docker images
+```
+View all images, includes mini cached images :
+```
+sudo docker images -a
+```
+Remove image by id 
+```
+sudo docker rmi [image id]
+```
+
+##### Build Arguments
+
+* You can pass arguments using the --build-arg flag
+    ```
+    docker build \
+    -t essearch/ess-elasticsearch:1.7.6 \
+    --build-arg number_of_shards=5 \
+    --build-arg number_of_replicas=2 \
+    --no-cache .
+    ```
+* But you must also add them into the Dockerfile like this :
+
+	```
+    ARG number_of_replicas
+	ARG number_of_shards
+    ```
+
+##### Build Cache
+Docker layer caching is a useful feature to save time but it's important that changes to repos are reflected in images. 
+* When an image is built using the `docker build` command, a Dockerfile is used to create an image
+* In a Dockefile, for every `RUN` command a seperate layer will be created. Layers are combined to form complete images.
+* `docker build` will try to re-use locally cached layers to make the image
+
+
+#### Microservices
+
+'Microservices' are modular applications whose component parts exist on different parts of a network. 
+
+Docker allows the creation of a microservices architecture as containers can be networked together. Typically, containers will communicate using a standard HTTP API.
+
+#### Docker Compose
+
+Microservices can be achieved using Docker Compose, "a tool for defining and running multi-container Docker applications"
+
+Docker Compose lets you use a config file to issue a series of Docker commands, instead of repeatedly using the command line.
+
+* To start
+    ```
+    docker-compose up
+    ```
+    * This does multiple docker build, run and network commands based on the docker-compose.yml file
+
+* To start as a daemon (in the background)
+    ```
+    docker-compose up -d
+    ```
+* To start using a yml file other than docker-compose.yml
+    ```
+    docker-compose -f /path/to/file/dev.yml up -d
+    ```
+* To stop all running containers started with 'docker-compose up'
+    ```
+    docker-compose down
+    ```
+
+##### docker-compose.yml example
+
+```
+
+version: '3'
+
+services:
+    front-end:
+        image: [organisation]/[image-name]:[tag]
+        build: 
+        volumes:
+        - "../relative/path/to/local/app/code:/absolute/path/to/app/code/in/container"
+        env_file:
+        - path/to/env/file/front-end.env
+        ports:
+        - "[host-port]:[container-port]"
+        depends_on:
+        - cms
+        command: npm start
+    cms
+        image: [organisation]/[image-name]:[tag]
+        volumes:
+        - "../relative/path/to/local/app/code:/absolute/path/to/app/code/in/container"
+        env_file:
+        - path/to/env/file/front-end.env
+        ports:
+        - "[host-port]:[container-port]"
+        depends_on:
+        - cms
+        command: npm start
+
+```
+The example would start 2 containers, `front-end` and `cms`, network them and make them available to each other using a domain set in the `env_file`
+
+##### docker-compose.yml properties
+
+* image
+    - Looks for a pre-built image to run
+        - First locally
+        - Secondly on Docker Hub
+        - Thirdly, it will build a new image using the Dockerfile specified in the build property
+            - The built image will be stored locally
+            - Next time $docker-compose up
+    - Fails if it can't find one
+* build
+    - location of the Dockerbuild file (see above)
+* volume
+    - maps a local directory to a directory in the conatiner
+    - used during development to temporarily replace code in the container with local code
+    - normally the local directory would contain distribution code built from a local repo pulled from GitHub
+    - normally the directory in the container would contain the application code
+* env_file
+    - path to the environment file
+    - contains anything that needs to passed to the container at when it is run
+* ports
+    - this sets the port on the host machine that the container will listen for requests, the port inside the container where requests will arrive and where applications inside the container should listen to
+* command
+    - overrules the `CMD` setting in the Dockerfile
+
+
+#### Docker Useful Commands
+
+* Print info in JSON format
+    ```
+    sudo docker inspect [image or container id]
+    ```
+    * If using screen, the scroll by doing : Ctrl A Escape to trigger the scroll mode, then up and down as needed. Esc twice to exit scroll mode
+
+* Delete unused stuff
+    ```
+    sudo docker system prune
+    ```
+* Delete everything: all Images, Containers and Networks
+    ```
+    sudo docker system prune -a
+    ```
+* Probably worth doing after above nuclear option
+    ```
+    sudo service docker restart
+    ```
+* SSH into a container
+    ```
+    sudo docker exec -it <container_id> bash
+    ```
+* Print a containers internal logs
+    ```
+    sudo docker logs <container_id>
+    ```
+##### Docker Hub
+Docker Hub is the GitHub for Docker Images. 
+
+It is useful for 2 key reasons
+
+1. To get free stuff
+    * Most applications have been 'containerised' and are available on DockerHub
+2. To publish, distribute and  manage your own private images
+    * DockerHub can use GitHub webhooks to automate the process of building Docker Images with code stored in GitHub
+
+
+#### Conclusion
 
 Docker has revolutionised the way that applications are built, tested and deployed, allowing for more automated and reliable procedures.

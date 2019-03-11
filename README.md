@@ -41,6 +41,22 @@
         * [NPM Tagging](#npm-tagging)
         * [NPM Link](#npm-link)
     * [Docker](#docker)
+        * [Containers](#containers)
+        * [Images](#images)
+        * [Images vs containers](#images-vs-containers)
+        * [Commit vs Dockerfile](#commit-vs-dockefile)
+        * [Build](#build)
+            * [Build Arguments](#build-arguments)
+            * [Build Cache](#build-cache)
+        * [Microservices](#microservices)
+        * [Docker Compose](#docker-compose)
+            * [docker-compose.yml](#docker-compose.yml)
+            * [Basic commands](#basic-commands)
+            * [docker-compose.yml example](#docker-compose.yml-example)
+            * [docker-compose.yml properties](#docker-compose.yml-properties)
+        * [Useful commands](#useful-commands)
+        * [Docker Hub](#docker-hub)
+        * [Conclusion](#conclusion)
 ---
 
 ## Architecture
@@ -1037,10 +1053,21 @@ Docker allows the creation of a microservices architecture as containers can be 
 
 Microservices can be achieved using Docker Compose, "a tool for defining and running multi-container Docker applications"
 
-Docker Compose lets you use a config file to issue a series of Docker commands, instead of repeatedly using the command line.
+##### docker-compose.yml file
+
+To use Docker Compose you need to create a .yml config file. It uses the information you create in the file to issue a series of Docker commands. 
+
+You could do all this on the command line, using Docker commands. Docker Compose makes it easier to do complex tasks and to read, edit and repeat them. You might call it a "task runner" for Docker.
+
+The default name for a .yml file is docker-compose.yml
+
+##### Basic Commands
 
 * To start
+
     ```
+    cd /path/to/docker-compose.yml
+
     docker-compose up
     ```
     * This does multiple docker build, run and network commands based on the docker-compose.yml file
@@ -1058,7 +1085,9 @@ Docker Compose lets you use a config file to issue a series of Docker commands, 
     docker-compose down
     ```
 
+
 ##### docker-compose.yml example
+
 
 ```
 
@@ -1118,7 +1147,7 @@ The example would start 2 containers, `front-end` and `cms`, network them and ma
     - overrules the `CMD` setting in the Dockerfile
 
 
-#### Docker Useful Commands
+#### Useful Commands
 
 * Print info in JSON format
     ```

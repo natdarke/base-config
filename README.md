@@ -15,7 +15,8 @@
 * [Development](#development)
     * [Local Directory Structure](#local-directory-structure)
     * [Using Volumes in Development](#using-volumes-in-development)
-    * [Set Up App on Local Host](#set-up-app-on-local-host)
+    * [Prepare Dev Environment](#prepare-dev-environment)
+    * [Start an App on Local Host](#start-an-app-on-local-host)
     * [Develop a Feature or Fix a Bug](#develop-a-feature-or-fix-a-bug)
     * [Working On Multiple Services](#working-on-multiple-services)
     * [Working with Dependency Packages](#working-with-dependency-packages)
@@ -218,9 +219,17 @@ You might say that these NPM packages are part of the 'development architecture'
 * A developer can mount a volume from their local machine inside a container, thereby allowing them to work on local code but have that code used within an application container/service
 * Docker Compose provides a convenient way to do this in a yml file
 
-### Set Up App on Local Host
 
-> This process can also be used for testing
+
+
+
+
+
+
+
+### Prepare Dev Environment
+
+> This process should also be used for testing
 
 1. Install and Configure Git
     ```
@@ -260,8 +269,11 @@ You might say that these NPM packages are part of the 'development architecture'
 
     > You will now be able to clone the Robot repositories using the SSH protocol without giving a password
 
+### Start App on Local Host
 
-7. Clone 'Root' from GitHub.
+> This process should also be used for testing
+
+1. Clone 'Root' from GitHub.
     
     > 'Root' is just the Docker Compose config files and environment variable files that allow you to start the app.
 
@@ -275,7 +287,7 @@ You might say that these NPM packages are part of the 'development architecture'
     git clone git@github.com:natdarke/robot-root.git
     ```
 
-8. Use Docker Compose to start the app
+2. Use Docker Compose to start the app
 	
     * #### For Development
         ```
@@ -307,13 +319,13 @@ You might say that these NPM packages are part of the 'development architecture'
 
 	> You will see how the progress of each container. When it is finished you will see a confirmation message
 	
-9. View the working app 
+3. View the working app 
 
     * In your browser go to `frontend.robot`
 
 	> You should see the application working
 
-10. Now you are ready to build a feature, fix a bug or test
+4. Now you are ready to build a feature, fix a bug or test
 
 ### Develop a Feature or Fix a Bug
 
@@ -321,11 +333,15 @@ Developing a feature involves complex processes for collaboration, building and 
 
 * Assumptions
 
-    * The application is working on your local machine, following the instructions in [Set Up Dev App on Local Host](#set-up-dev-app-on-local-host)
+    * The application is working on your local machine, following the instructions in 
+        * [Prepare Dev Environment](#prepare-dev-environment) and 
+        * [Start an App on Local Host](#start-an-app-on-local-host)
     * The feature only requires work on 1 service. If you your feature requires that you work on more than one service, see [Develop with Multiple services](#develop-with-multiple-services)
     * You don't need to work on any NPM packages. If you do, see [Develop with NPM packages](#develop-with-npm-packages)
 
-1. Get the code for the service you need to work on
+1. Clone the service 
+
+    * You only need to clone the service you need to work on
 
     * If you HAVE NOT cloned this service before
 
@@ -425,9 +441,12 @@ Developing a feature involves complex processes for collaboration, building and 
     ```
     git commit -am "Description of change"
     ```
+    IF YOU NEED TO CHANGE A DEPENDENCY PACKAGE FOLLOW THE STEPS HERE.
+
+    ALL CHANGES TO A DEPENDENCY PACKAGE CAN BE VIEWED AS SINGLE CHANGE TO THE VERSION NUMBER OF THE CHANGED PACKAGE IN THE PACKAGE.JSON OF THE SERVICE
 
 7. Push the feature branch
-    
+
     ```
     git push origin feature/[feature name]
     ```
@@ -436,7 +455,7 @@ Developing a feature involves complex processes for collaboration, building and 
     * The purpose of tagging 2 fold:
         1. To indicate that a commit represents to completion of a feature, subject to testing
 		2. To trigger an image build in Docker Hub, tagged with the same name
-	* Tag your latest commit:	
+	* Tag your latest commit:
         
         ```
         git tag -a feature-[feature name]-1 -m "Feature [feature name] is ready for testing"
@@ -467,7 +486,8 @@ Developing a feature involves complex processes for collaboration, building and 
     front-end:
         image: natdarke/robot-service-front-end:feature-[feature-name]
     ```
-12. Commit and push
+12. Commit the change
+12. Push Root to GitHub
 13. Instruct tester to test the feature using `docker-compose.test.yml` on branch `feature/[feature-name]`
 
 ### Working On Multiple Services
@@ -575,7 +595,8 @@ Summary:
         > Tagging a version of an npm package during development prevents it from being installed by default. The default tag is 'latest' which indicates that it is the latest production ready version. By using a different tag you are saying "This version is NOT production ready" and NPM will not install it unless explicitly asked to do so (in package.json or CLI)
 
 2. Change the version of the 'dependency package' in the service
-    1. Create feature branch for the service.
+    1. Clone The Service
+    2. Create feature branch for the service.
         ```
         cd ~/[your dev directory name]/[app-name]/service/[service-name]
         git fetch 
@@ -583,9 +604,9 @@ Summary:
         git branch feature/[feature-name]
         git checkout feature/[feature-name]
         ```
-    2. Bump the service version, according to Semantic Versioning principles, and git commit the change `~/[your dev directory name]/[app-name]/service/[service-name]/package.json` bump dependency version to be same as version in `~/[your dev directory name]/[app-name]/package/[package-name]/package.json` e.g. `^1.1.0`
-    3. Push service feature branch and proceed as if this was a normal service feature development.
-    4. When you are satisfied that this 'dependency package' has had enough testing, re-publish with the tag `latest`
+    3. Bump the service version, according to Semantic Versioning principles, and git commit the change `~/[your dev directory name]/[app-name]/service/[service-name]/package.json` bump dependency version to be same as version in `~/[your dev directory name]/[app-name]/package/[package-name]/package.json` e.g. `^1.1.0`
+    4. Push service feature branch and proceed as if this was a normal service feature development.
+    5. When you are satisfied that this 'dependency package' has had enough testing, re-publish with the tag `latest`
 
 3. Change the version of the service in the root app's test yml file
     1. Create a new feature branch from master

@@ -337,7 +337,7 @@ Developing a feature involves complex processes for collaboration, building and 
         * [Prepare Dev Environment](#prepare-dev-environment) and 
         * [Start an App on Local Host](#start-an-app-on-local-host)
     * The feature only requires work on 1 service. If you your feature requires that you work on more than one service, see [Develop with Multiple services](#develop-with-multiple-services)
-    * You don't need to work on any NPM packages. If you do, see [Develop with NPM packages](#develop-with-npm-packages)
+    * You don't need to work on any NPM packages. If you do, see [Working with Dependency Packages](#working-with-dependency-packages)
 
 1. Clone the service 
 
@@ -426,7 +426,13 @@ Developing a feature involves complex processes for collaboration, building and 
     sudo docker-compose -f docker-compose.dev.yml up -d
     ```
 
-5. See your changes
+5. Develop
+
+    Make code changes on this branch and commit each change until the task is complete
+    
+    ```
+    git commit -am "Description of change"
+    ```
 
     To see any changes you must have cloned the service and mounted it as a `volume` in the `docker-compose.dev.yml` file (see stages 1-3)
 
@@ -434,24 +440,26 @@ Developing a feature involves complex processes for collaboration, building and 
 
     > This because React uses a special development server that listens to, and serves, the uncompiled source code
 
-    > You may realise that the code you need to change is, in fact, part of an NPM package. If this is the case, follow the instructions in [Develop with NPM packages](#develop-with-npm-packages)
+    #### Changing NPM dependency packages
 
-6. Make code changes on this branch and commit each change until the task is complete
-	
-    ```
-    git commit -am "Description of change"
-    ```
-    IF YOU NEED TO CHANGE A DEPENDENCY PACKAGE FOLLOW THE STEPS HERE.
+    You may realise that the code you need to change is, in fact, part of an NPM package. If this is the case:
+    
+    1. Follow the instructions in [Working with Dependency Packages](#working-with-dependency-packages)
+    2. ##### When you have finished working on the dependency package
+        * Update the version number of the package in the service's package.json file
+        * In other words change `~/[your dev directory name]/[app-name]/service/[service-name]/package.json` to use the exact version in `~/[your dev directory name]/[app-name]/package/[package-name]/package.json` e.g. `1.1.0`
+    3. Commit the version number change
+        ```
+        git commit -am "Version number change for dependency package [package-name]"
+        ```
 
-    ALL CHANGES TO A DEPENDENCY PACKAGE CAN BE VIEWED AS SINGLE CHANGE TO THE VERSION NUMBER OF THE CHANGED PACKAGE IN THE PACKAGE.JSON OF THE SERVICE
-
-7. Push the feature branch
+6. Push the feature branch
 
     ```
     git push origin feature/[feature name]
     ```
 
-8. Create a feature tag
+7. Create a feature tag
     * The purpose of tagging 2 fold:
         1. To indicate that a commit represents to completion of a feature, subject to testing
 		2. To trigger an image build in Docker Hub, tagged with the same name
@@ -469,14 +477,14 @@ Developing a feature involves complex processes for collaboration, building and 
 	    > Be careful not to give your tag the same name as the branch. It will cause errors.
 
         > Tag names are currently very similar to branch names. This should change to avoid errors
-9. Push the feature tag
+8. Push the feature tag
     ```
     git push origin feature-[feature name]-1
     ```
     > This triggers an automatic feature image build on DockerHub, tagged with the same name i.e. feature-[feature name]-1		
 
-10. In `service/root` branch `develop` to `feature/[feature-name]`.
-11. In `docker-compose.test.yml` change the tag of the service image to be `feature-[feature-name]` e.g. change
+9. In `service/root` branch `develop` to `feature/[feature-name]`.
+10. In `docker-compose.test.yml` change the tag of the service image to be `feature-[feature-name]` e.g. change
     ```
     front-end:
         image: natdarke/robot-service-front-end:develop
@@ -486,9 +494,10 @@ Developing a feature involves complex processes for collaboration, building and 
     front-end:
         image: natdarke/robot-service-front-end:feature-[feature-name]
     ```
-12. Commit the change
-12. Push Root to GitHub
+11. Commit the change
+12. Push `feature/[feature-name]` of Root to GitHub
 13. Instruct tester to test the feature using `docker-compose.test.yml` on branch `feature/[feature-name]`
+14. If a dependency package was changed, and you are happy that it has had enough testing, re-publish it with the tag `latest`. This will cause the new version to become the default installation. Other developers can update to the new version using `npm install`
 
 ### Working On Multiple Services
 
@@ -507,136 +516,86 @@ If you need to work with a 'dependency package' the workflow gets a bit more com
 
 If feature story requires some work on a 'dependency package' it is probably best to split the work on the 'dependency package'into a seperate task, to be completed before the work on the feature story begins. This is because 'dependency packages' are meant to be used by more than one service.
 
-To complete the feature story you might not need to change a service at all, other than to change the version of the 'dependency package' it uses.
+To complete the feature story you might not need to change a service at all, other than to change the version of the 'dependency package' it uses. 
 
-Summary:
-
-1. Work on the 'dependency package'
-2. Change the version of the 'dependency package' in the service
-3. Change the version of the service in the root app's test yml file
-
----
-
-1. Work on the 'dependency package'
     
-    1. Clone 'dependency package' repo 
-        ```
-        mkdir ~/[your dev directory name]/[app-name]/package/[package-name]/
-        
-        cd ~/[your dev directory name]/[app-name]/package/[package-name]/ 
+1. Clone 'dependency package' repo 
+    ```
+    mkdir ~/[your dev directory name]/[app-name]/package/[package-name]/
+    
+    cd ~/[your dev directory name]/[app-name]/package/[package-name]/ 
 
-        git clone git@github.com:natdarke/[package-name].git
-        ```
+    git clone git@github.com:natdarke/[package-name].git
+    ```
 
-    2. In the 'dependency package', branch from `develop` to `feature/[feature-name]`
-        ```
-        cd ~/[your dev directory name]/[app-name]/service/[service-name]/node_modules_linked/[package-name]
+2. In the 'dependency package', branch from `develop` to `feature/[feature-name]`
+    ```
+    cd ~/[your dev directory name]/[app-name]/service/[service-name]/node_modules_linked/[package-name]
 
-        git fetch 
-        
-        git checkout develop
+    git fetch 
+    
+    git checkout develop
 
-        git branch feature/[feature-name]
+    git branch feature/[feature-name]
 
-        git checkout feature/[feature-name]
-        ```
-    3. Link the 'dependency package' to the service using `npm link`
-        See [NPM Link](#npm-link)
-        ```
-        cd ~/[your dev directory name]/[app-name]/package/[package-name]/
+    git checkout feature/[feature-name]
+    ```
+3. Link the 'dependency package' to the service using `npm link`
+    See [NPM Link](#npm-link)
+    ```
+    cd ~/[your dev directory name]/[app-name]/package/[package-name]/
 
-        npm link
+    npm link
 
-        cd ~/[your dev directory name]/[app-name]/service/[service-name]
+    cd ~/[your dev directory name]/[app-name]/service/[service-name]
 
-        npm link [package-name]
-        ```
-        > This allows you to work on the 'dependency package' code during development and see the changes you make reflected in the service. 
-        
+    npm link [package-name]
+    ```
+    > This allows you to work on the 'dependency package' code during development and see the changes you make reflected in the service. 
+    
 
-    5. Work on `~/[your dev directory name]/[app-name]/package/[package-name]/` with git as per normal
+4. Work on `~/[your dev directory name]/[app-name]/package/[package-name]/` with git as per normal
 
-    6. Bump the 'dependency package' version, according to [Semantic Versioning](#semantic-versioning) principles, and git commit the change
+5. Bump the 'dependency package' version, according to [Semantic Versioning](#semantic-versioning) principles, and git commit the change
 
-        e.g. change 
-        ```
-        {
-            "name": "my-package-name",
-            "version": "1.0.0",
-        ```
-        to
-        ```
-        {
-            "name": "my-package-name",
-            "version": "1.1.0",
-        ```
-        
-        in `~/[your dev directory name]/[app-name]/package/[package-name]/package.json`
-    7. Push `feature/[feature-name]` branch
-        ```
-        git push origin feature/[feature-name]
-        ```
+    e.g. change 
+    ```
+    {
+        "name": "my-package-name",
+        "version": "1.0.0",
+    ```
+    to
+    ```
+    {
+        "name": "my-package-name",
+        "version": "1.1.0",
+    ```
+    
+    in `~/[your dev directory name]/[app-name]/package/[package-name]/package.json`
+6. Push `feature/[feature-name]` branch
+    ```
+    git push origin feature/[feature-name]
+    ```
 
-    8. In GitHub request a code review
+7. In GitHub request a code review
 
-    9. Make any necessary changes from the code review and re-commit, push and request code review. Do NOT re-bump the version, as versions indicate a release
+8. Make any necessary changes from the code review and re-commit, push and request code review. Do NOT re-bump the version, as versions indicate a release
 
-    10. Publish the 'dependency package' from the `feature/[feature-name]` branch with tag `feature-[feature-name]`
-        ```
-        npm login
-        ```
-        > You may be prompted for a username a password. You must have an npmjs.com account and that account must have been given permission to publish by its owner. See [Publishing to NPM JS](#publishing-to-npm-js)
+9. Publish the 'dependency package' from the `feature/[feature-name]` branch with tag `feature-[feature-name]`
+    ```
+    npm login
+    ```
+    > You may be prompted for a username a password. You must have an npmjs.com account and that account must have been given permission to publish by its owner. See [Publishing to NPM JS](#publishing-to-npm-js)
 
-        ```
-        cd ~/[your dev directory name]/[app-name]/package/[package-name]
+    ```
+    cd ~/[your dev directory name]/[app-name]/package/[package-name]
 
-        npm publish --tag feature-[feature-name]
-        ```
-        > Tagging a version of an npm package during development prevents it from being installed by default. The default tag is 'latest' which indicates that it is the latest production ready version. By using a different tag you are saying "This version is NOT production ready" and NPM will not install it unless explicitly asked to do so (in package.json or CLI)
+    npm publish --tag feature-[feature-name]
+    ```
+    > Tagging a version of an npm package during development prevents it from being installed by default. The default tag is 'latest' which indicates that it is the latest production ready version. By using a different tag you are saying "This version is NOT production ready" and NPM will not install it unless explicitly asked to do so (in package.json or CLI)
+10. Unlink the dependency package. See [NPM Link](#npm-link)
+11. Return to working on the service [When you have finished working on the dependency package](#when-you-have-finished-working-on-the-dependency-package)
 
-2. Change the version of the 'dependency package' in the service
-    1. Clone The Service
-    2. Create feature branch for the service.
-        ```
-        cd ~/[your dev directory name]/[app-name]/service/[service-name]
-        git fetch 
-        git checkout develop 
-        git branch feature/[feature-name]
-        git checkout feature/[feature-name]
-        ```
-    3. Bump the service version, according to Semantic Versioning principles, and git commit the change `~/[your dev directory name]/[app-name]/service/[service-name]/package.json` bump dependency version to be same as version in `~/[your dev directory name]/[app-name]/package/[package-name]/package.json` e.g. `^1.1.0`
-    4. Push service feature branch and proceed as if this was a normal service feature development.
-    5. When you are satisfied that this 'dependency package' has had enough testing, re-publish with the tag `latest`
-
-3. Change the version of the service in the root app's test yml file
-    1. Create a new feature branch from master
-        ```
-        cd ~/[your dev directory name]/[app-name]/root
-        git fetch
-        git checkout master
-        git branch feature/[feature-name]
-        git checkout feature/[feature-name]
-        ```
-        - Root doesn't need a full branching strategy because is small and changes rarely. Therefore, branching from master is acceptable.
-
-    2. In `docker-compose.test.yml` change the image tag of the of the service or services that need to be feature tested e.g. 
-        
-        Change From
-        ```
-        front-end:
-            image: natdarke/robot-service-front-end:develop
-        ```
-        To
-        ```
-        front-end:
-            image: natdarke/robot-service-front-end:feature-[feature-name]
-        ```
-    3. Push to remote
-        ```
-        cd ~/[your dev directory name]/[app-name]/root
-        git push origin feature/[feature-name]
-        ```
-The app is now ready to be tested. The tester must pull the feature branch and use the `docker-compose.test.yml` file with docker compose e.g. `sudo docker-compose -f docker-compose.test.yml up` 
 
 ## Testing
 
@@ -952,26 +911,36 @@ To make matters more confusing, you are also using a Docker Volume during develo
 
 > NPM Link uses symlinks to temporarily replace the npm package in `/path/to/app/node_modules` with the one in `/path/to/local/dev/npm/package/`
 
-The process is achieved in 2 steps
+* Linking
+    1. In the package
+        ```
+        cd /path/to/local/dev/npm/package/
+        npm link
+        ```
 
-1. Link the local development package to NPM's global install directory
-    ```
-    cd /path/to/local/dev/npm/package/
-    npm link
-    ```
-    This step creates a symbolic link in the NPM global install directory that points to the local development package. More specifically, a symbolic link is create in `[prefix]/lib/node_modules/[package-name]` that points to `/path/to/local/dev/npm/package/`
+        This links the local development package to NPM's global install directory.
 
-    > The NPM global install directory is where NPM installs packages when you use the -g flag i.e. packages that are used on the command line rather than used as a dependency in an application. It can be located in different places according to your OS and if you are using Node Version Manager (NVM) but takes the form `[prefix]/lib/node_modules/[package-name]`, with `{prefix}` being the part that varies. 
+        It creates a symbolic link in the NPM global install directory that points to the local development package. More specifically, a symbolic link is create in `[prefix]/lib/node_modules/[package-name]` that points to `/path/to/local/dev/npm/package/`
 
-    > On Ubuntu Linux, the location is either probably `/usr/local/lib/node_modules/[package-name]` or, if you are using NVM, `~/.nvm/versions/node/[version-number]/lib/node_modules`
-2. Link NPM's global install directory to the application
-    ```
-    cd /path/to/app/
-    npm link [package-name]
-    ```
-    Creates Symbolic link in `[prefix]/lib/node_modules/` that points to `/path/to/app/node_modules/[package-name]`
+        > The NPM global install directory is where NPM installs packages when you use the -g flag i.e. packages that are used on the command line rather than used as a dependency in an application. It can be located in different places according to your OS and if you are using Node Version Manager (NVM) but takes the form `[prefix]/lib/node_modules/[package-name]`, with `{prefix}` being the part that varies. 
 
-To make matters more confusing, you are also [Using Volumes in Development](#using-volumes-in-development). You have a NPM dev package linked to an app. The app is inside a volume. The volume is linked to a directory inside a service container. See figure 1 (To Do)
+        > On Ubuntu Linux, the location is either probably `/usr/local/lib/node_modules/[package-name]` or, if you are using NVM, `~/.nvm/versions/node/[version-number]/lib/node_modules`
+    2. In the service (aka application, or 'root package')
+        ```
+        cd /path/to/app/
+        npm link [package-name]
+        ```
+        This links NPM's global install directory to the service i.e. creates a symbolic link in `[prefix]/lib/node_modules/` that points to `/path/to/app/node_modules/[package-name]`
+
+* Un-linking
+    > It is essential that you unlink a package after working on it. This act of 'cleaning up' will help you avoid errors after, e.g. after switching branch
+
+    1. In the service: `npm unlink --no-save [package-name]`
+    2. In the package: `npm unlink`
+
+    > The order is important
+
+To make matters more confusing, you are also [Using Volumes in Development](#using-volumes-in-development). You have a NPM dev package linked to an app. The app is inside a volume. The volume is linked to a directory inside a service container.
 
 > In fact NPM Link has similar utility to using a Docker Volume. In the case of both NPM Link And Docker Volumes, you are asking a parent 'thing' to temporarily replace some child code with a newer, development version of the same code on your local machine
 ```
@@ -980,7 +949,6 @@ Method          Parent              Child
 Docker volume   Docker container    JS app code
 NPM Link        JS app Code         JS NPM dependency
 ```
-
 
 ### Docker
 

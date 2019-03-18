@@ -1,7 +1,7 @@
-# Documentation for Robot
+# Documentation for Base
 
 * [Architecture](#architecture)
-    * [Root](#root)
+    * [Config](#config)
     * [Services](#services)
         * [Reverse Proxy](#reverse-proxy)
         * [Front End](#front-end)
@@ -64,16 +64,32 @@
 
 This application uses a Docker micro-services architecture. This approach is highly modular but it is relatively complex. It consists of a group of networked Docker containers that are called services. Each service is there to do a specific job.
 
-### Root
+Some of the advantages of a Docker-bsed micro-services architecture are:
 
-The root is just some config files used to start up the application. It consists of
+* Language agnostic. You can use any language and any framework, as long as there is an HTTP API.
+* Clear responsibility and ownership. One team can be reponsible for a specific micro-service.
+* Scaling. You can run multiple, load-balanced clones of a container for each service. This means that, in production, each service can repond to demand independently, by increasing or decreasing resources, ensuring 'just-enough' performance and optimising costs.
+
+### Config
+
+'Config' is just some config files used to start up the application. It consists of
 
 1. Docker Compose yml files
     * Used to bootstrap the app, including downloading and caching the Docker image for each service, running one or many containers from each image and networking the containers on a Docker network
     * There are different yml files for development, testing and production
 2. Environment variables for each service
 
+For development we are using Docker Compose as a tool to run and network Docker containers and build images on a single local host.
+
+We plan to change to using a full container cluster management and orchestration tool such as Docker Swarm or Kubinetes as this is more appropriate for a production environment where there may be multiple hosts.
+
 ### Services
+
+Services are [Docker](#docker) containers that contain one, well defined part of an application. Each service has an HTTP API and they communicate with each other over a network. Using Docker Compose and the code in [Config](#config) you can, with just one command, download all the required images, run containers from the images and network the containers. In other words you can start the application and see it running in your browser.
+
+The Git repository for each service includes a `Dockerfile` to build a Docker image. Docker Images can be stored on Docker Hub, a repository for Docker images. Docker Hub can be easily configured to build images automatically from code stored in GitHub using webhooks. Using this method commits or tags pushed to GitHub will trigger a Docker image build on Docker Hub.
+
+Services in this application include:
 
 1. One Reverse Proxy
 2. One Front End
@@ -152,7 +168,7 @@ Strapi is an open source headless CMS that allows you to easily create APIs to f
 
 It has advantages and disadvantages over Contenful.
 
-Advatages
+Advantages
 
 1. It's free
 2. Open Source mean complete access to and control over the code base
@@ -207,10 +223,13 @@ You might say that these NPM packages are part of the 'development architecture'
 > This application and documentation assumes the following directory structure during development
 
 ```
-~/[your dev directory name]/[app name]/root
+~/[your dev directory name]/[app name]/config
 ~/[your dev directory name]/[app name]/service
 ~/[your dev directory name]/[app name]/service/[service-1-name]
 ~/[your dev directory name]/[app name]/service/[service-2-name]
+~/[your dev directory name]/[app name]/lib/[package-1-name]
+~/[your dev directory name]/[app name]/lib/[package-2-name]
+
 ```
 
 ### Using Volumes in Development
@@ -273,38 +292,38 @@ You might say that these NPM packages are part of the 'development architecture'
 
 > This process should also be used for testing
 
-1. Clone 'Root' from GitHub.
+1. Clone 'Config' from GitHub.
     
-    > 'Root' is just the Docker Compose config files and environment variable files that allow you to start the app.
+    > 'Config' is just the Docker Compose config files and environment variable files that allow you to start the app.
 
     > `[app-name]` is 'robot', in this case
 	
     ```
-    mkdir -p ~/[your dev directory name]/[app-name]/root
+    mkdir -p ~/[your dev directory name]/[app-name]/config
     
-    cd ~/[your dev directory name]/[app-name]/root
+    cd ~/[your dev directory name]/[app-name]/config
 
-    git clone git@github.com:natdarke/robot-root.git
+    git clone git@github.com:natdarke/base-config.git
     ```
 
 2. Use Docker Compose to start the app
 	
     * #### For Development
         ```
-        cd ~/[your dev directory name]/[app-name]/root
+        cd ~/[your dev directory name]/[app-name]/config
 
         sudo docker-compose -f docker-compose.dev.yml up -d
         ```
     * #### For Regression Testing and UAT
         ```
-        cd ~/[your dev directory name]/[app-name]/root
+        cd ~/[your dev directory name]/[app-name]/config
 
         sudo docker-compose -f docker-compose.test.yml up -d
         ```
     * #### For feature Testing
         > This file needs to be created and deleted by the developer, per feature
         ```
-        cd ~/[your dev directory name]/[app-name]/root
+        cd ~/[your dev directory name]/[app-name]/config
 
         git fetch
 
@@ -419,7 +438,7 @@ Developing a feature involves complex processes for collaboration, building and 
 4. Start / Re-Start the application
 
     ```
-    cd ~/[your dev directory name]/[app-name]/root
+    cd ~/[your dev directory name]/[app-name]/config
 
     sudo docker-compose -f docker-compose.dev.yml down
 
@@ -483,7 +502,7 @@ Developing a feature involves complex processes for collaboration, building and 
     ```
     > This triggers an automatic feature image build on DockerHub, tagged with the same name i.e. feature-[feature name]-1		
 
-9. In `service/root` branch `develop` to `feature/[feature-name]`.
+9. In `service/config` branch `develop` to `feature/[feature-name]`.
 10. In `docker-compose.test.yml` change the tag of the service image to be `feature-[feature-name]` e.g. change
     ```
     front-end:
@@ -758,17 +777,17 @@ NPM is a package manager for JavaScript. It was originally designed for use with
 
 #### JS Modules
 
-A JS module is a single file that can imported into other JS files. JS modules tend to comprised of code that can be used in many places within one specific application.
+A JS module is a single file that can imported into other JS files. JS modules tend to comprised of code that can be used in many places within one application.
 
 More specifically, a module is a single JavaScript file that has some reasonable functionality and exposes some of its parts (functions, objects, or primitive values) by using `module.exports`. Exported parts are available to other JavaScript files by using `require` or `import`. Exact implementations vary depending if you are using server side or client side code and if you are using a module bundler such as Webpack. Modules are part of the JavaScript/ECMAScript standard.
 
 #### NPM Packages
 
-An NPM package is a collection of JS modules that can be shared or distributed using NPM. It comprises of a directory with one or more modules inside of it and a package.json file which has metadata about the package that can be understood by NPM. 
+An NPM package is a collection of [JS modules](#js-modules) that can be shared or distributed using NPM. It comprises of a directory with one or more modules inside of it and a package.json file which has metadata about the package that can be understood by NPM. 
 
-Using an NPM package is the same as using a module i.e. with `require` or `import` except you use the package name, not a file path.
+Using an NPM package is the same as using a [JS modules](#js-modules) i.e. with `require` or `import` except you use the package name, not a file path.
 
-All JavaScript files in a package are JS modules except for the 'entry point' file whose path set in `package.json` as `main`. The main file is a standard JS file, not a module, because it doesn't need to export anything. NPM packages are comprised of JavaScript but part of NPM and NOT part of the JavaScript/ECMAScript standard.
+All JavaScript files in a package are JS modules. There is an 'entry point' file, whose path is set in `package.json` as `main`. The main file 'imports' other modules as required. NPM packages are comprised of JavaScript but part of NPM and NOT part of the JavaScript/ECMAScript standard.
 
 ##### Dependencies
 A dependency is a package used by another package. They are listed in `package.json` as `dependencies`. Dependencies are stored seperately from each other and only combined as the result of a `npm install` command at which point they are downloaded and placed in a `node_modules` directory.
@@ -799,25 +818,30 @@ NPM packages tend to be either whole applications that are NOT shared using NPM,
 NPM packages can be stored in 2 locations on the internet. 
 
 1. A Git repository
+    - For distributing source code at many stages of development
     - Used by
-        - Root Packages
-            - The Git repo for a JS service includes the Root Package code and a Dockerfile
-        - Tool packages
+        - Root packages
+        - Dependency packages
     - Purpose
         - Development
     - Contains
         - [Source code](#source-code)
         - package.json including devDependencies
+    - Can also contain
+        - Dockerfile (if this is a root package being used as a service)
         - LICENCE and README.md
         - Webpack config
 2. An NPM repository (see (NPM JS)[#npm-js])
+    - For distributing production (or test) quality dependency packages
     - Used by
-        - Tool packages
+        - Dependency packages
+        - Root packages are NOT distributed with NPM
     - Purpose
         - Distribution
     - Contains
         - [Source code](#source-code) and/or [distribution code](#distribution-code) (created at build time)
         - package.json NOT including devDependencies
+    - Can also contain
         - LICENCE and README.md
         - SourceMap file for debugging (created at build time)
 

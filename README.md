@@ -1,5 +1,16 @@
 # Documentation for Base
 
+This a base for any micro-services application. It is designed to be forked and used as the basis for a new application.
+
+The goal is to provide:
+
+- Solid architecture
+- Suite of useful services and packages
+- Guidelines for development and testing workflow
+- Documentation including diagrams
+
+---
+
 * [Architecture](#architecture)
     * [Config](#config)
     * [Services](#services)
@@ -223,12 +234,13 @@ You might say that these NPM packages are part of the 'development architecture'
 > This application and documentation assumes the following directory structure during development
 
 ```
-~/[your dev directory name]/[app name]/config
-~/[your dev directory name]/[app name]/service
-~/[your dev directory name]/[app name]/service/[service-1-name]
-~/[your dev directory name]/[app name]/service/[service-2-name]
-~/[your dev directory name]/[app name]/lib/[package-1-name]
-~/[your dev directory name]/[app name]/lib/[package-2-name]
+~/[your dev directory name]/base/config
+~/[your dev directory name]/base/service
+~/[your dev directory name]/base/service/[service-1-name]
+~/[your dev directory name]/base/service/[service-2-name]
+~/[your dev directory name]/base/package
+~/[your dev directory name]/base/package/[package-1-name]
+~/[your dev directory name]/base/package/[package-2-name]
 
 ```
 
@@ -272,14 +284,13 @@ You might say that these NPM packages are part of the 'development architecture'
     * In /etc/hosts, add the following lines
 	
         ```
-        127.0.0.1    frontend.robot
-        127.0.0.1    contentful.robot
-        127.0.0.1    static.robot
+        127.0.0.1    frontend.base
+        127.0.0.1    contentful.base
         ```
   
-5. Create a GitHub account and ask us to add it to the Robot group
+5. Create a GitHub account and ask us to add it to the Base organisation
 
-	> You will now be able to view the Robot repositories
+	> You will now be able to view the Base repositories
 
 6. Set up SSH keys on your GitHub account 
 	
@@ -295,13 +306,11 @@ You might say that these NPM packages are part of the 'development architecture'
 1. Clone 'Config' from GitHub.
     
     > 'Config' is just the Docker Compose config files and environment variable files that allow you to start the app.
-
-    > `[app-name]` is 'robot', in this case
 	
     ```
-    mkdir -p ~/[your dev directory name]/[app-name]/config
+    mkdir -p ~/[your dev directory name]/base/config
     
-    cd ~/[your dev directory name]/[app-name]/config
+    cd ~/[your dev directory name]/base/config
 
     git clone git@github.com:natdarke/base-config.git
     ```
@@ -310,20 +319,20 @@ You might say that these NPM packages are part of the 'development architecture'
 	
     * #### For Development
         ```
-        cd ~/[your dev directory name]/[app-name]/config
+        cd ~/[your dev directory name]/base/config
 
         sudo docker-compose -f docker-compose.dev.yml up -d
         ```
     * #### For Regression Testing and UAT
         ```
-        cd ~/[your dev directory name]/[app-name]/config
+        cd ~/[your dev directory name]/base/config
 
         sudo docker-compose -f docker-compose.test.yml up -d
         ```
     * #### For feature Testing
         > This file needs to be created and deleted by the developer, per feature
         ```
-        cd ~/[your dev directory name]/[app-name]/config
+        cd ~/[your dev directory name]/base/config
 
         git fetch
 
@@ -367,9 +376,9 @@ Developing a feature involves complex processes for collaboration, building and 
         1. Clone the service you need to work on
             
             ```
-            mkdir -p ~/[your dev directory name]/[app-name]/service
+            mkdir -p ~/[your dev directory name]/base/service
             
-            cd ~/[your dev directory name]/[app-name]/service
+            cd ~/[your dev directory name]/base/service
 
             git clone git@github.com:natdarke/[service-name].git
 
@@ -386,7 +395,7 @@ Developing a feature involves complex processes for collaboration, building and 
         
         1. Make sure the develop branch exists locally and is up to date
             ```
-            cd ~/[your dev directory name]/[app-name]/service/[service-name]
+            cd ~/[your dev directory name]/base/service/[service-name]
             git fetch
             git checkout develop
             git pull develop
@@ -438,7 +447,7 @@ Developing a feature involves complex processes for collaboration, building and 
 4. Start / Re-Start the application
 
     ```
-    cd ~/[your dev directory name]/[app-name]/config
+    cd ~/[your dev directory name]/base/config
 
     sudo docker-compose -f docker-compose.dev.yml down
 
@@ -466,7 +475,7 @@ Developing a feature involves complex processes for collaboration, building and 
     1. Follow the instructions in [Working with Dependency Packages](#working-with-dependency-packages)
     2. ##### When you have finished working on the dependency package
         * Update the version number of the package in the service's package.json file
-        * In other words change `~/[your dev directory name]/[app-name]/service/[service-name]/package.json` to use the exact version in `~/[your dev directory name]/[app-name]/package/[package-name]/package.json` e.g. `1.1.0`
+        * In other words change `~/[your dev directory name]/base/service/[service-name]/package.json` to use the exact version in `~/[your dev directory name]/base/package/[package-name]/package.json` e.g. `1.1.0`
     3. Commit the version number change
         ```
         git commit -am "Version number change for dependency package [package-name]"
@@ -540,16 +549,16 @@ To complete the feature story you might not need to change a service at all, oth
     
 1. Clone 'dependency package' repo 
     ```
-    mkdir ~/[your dev directory name]/[app-name]/package/[package-name]/
+    mkdir ~/[your dev directory name]/base/package/[package-name]/
     
-    cd ~/[your dev directory name]/[app-name]/package/[package-name]/ 
+    cd ~/[your dev directory name]/base/package/[package-name]/ 
 
     git clone git@github.com:natdarke/[package-name].git
     ```
 
 2. In the 'dependency package', branch from `develop` to `feature/[feature-name]`
     ```
-    cd ~/[your dev directory name]/[app-name]/service/[service-name]/node_modules_linked/[package-name]
+    cd ~/[your dev directory name]/base/service/[service-name]/node_modules_linked/[package-name]
 
     git fetch 
     
@@ -562,18 +571,18 @@ To complete the feature story you might not need to change a service at all, oth
 3. Link the 'dependency package' to the service using `npm link`
     See [NPM Link](#npm-link)
     ```
-    cd ~/[your dev directory name]/[app-name]/package/[package-name]/
+    cd ~/[your dev directory name]/base/package/[package-name]/
 
     npm link
 
-    cd ~/[your dev directory name]/[app-name]/service/[service-name]
+    cd ~/[your dev directory name]/base/service/[service-name]
 
     npm link [package-name]
     ```
     > This allows you to work on the 'dependency package' code during development and see the changes you make reflected in the service. 
     
 
-4. Work on `~/[your dev directory name]/[app-name]/package/[package-name]/` with git as per normal
+4. Work on `~/[your dev directory name]/base/package/[package-name]/` with git as per normal
 
 5. Bump the 'dependency package' version, according to [Semantic Versioning](#semantic-versioning) principles, and git commit the change
 
@@ -590,7 +599,7 @@ To complete the feature story you might not need to change a service at all, oth
         "version": "1.1.0",
     ```
     
-    in `~/[your dev directory name]/[app-name]/package/[package-name]/package.json`
+    in `~/[your dev directory name]/base/package/[package-name]/package.json`
 6. Push `feature/[feature-name]` branch
     ```
     git push origin feature/[feature-name]
@@ -607,7 +616,7 @@ To complete the feature story you might not need to change a service at all, oth
     > You may be prompted for a username a password. You must have an npmjs.com account and that account must have been given permission to publish by its owner. See [Publishing to NPM JS](#publishing-to-npm-js)
 
     ```
-    cd ~/[your dev directory name]/[app-name]/package/[package-name]
+    cd ~/[your dev directory name]/base/package/[package-name]
 
     npm publish --tag feature-[feature-name]
     ```
@@ -934,6 +943,8 @@ During development you will probably need to use NPM Link. This is a feature of 
 To make matters more confusing, you are also using a Docker Volume during development
 
 > NPM Link uses symlinks to temporarily replace the npm package in `/path/to/app/node_modules` with the one in `/path/to/local/dev/npm/package/`
+
+> In the case of this application, `/path/to/local/dev/npm/package/` is `~/[your dev directory name]/base/package/[package-name]`
 
 * Linking
     1. In the package

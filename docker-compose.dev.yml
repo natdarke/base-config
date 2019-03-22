@@ -8,19 +8,19 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
   static:
-    image: natdarke/base-service-static:develop
+    image: natdarke/base-static:develop
     # volumes:
     #  - "../services/static/src:/var/www"
     ports: 
       - "5003:80"
     environment:
-      - environment/dev/base-service-static.env
+      - environment/dev/base-static.env
   front-end:
-    image: natdarke/base-service-front-end:develop
+    image: natdarke/base-front-end:develop
     # volumes:
     #  - "../services/front-end/app:/usr/src/app"
     env_file:
-      - environment/dev/base-service-front-end.env
+      - environment/dev/base-front-end.env
     ports:
       - "5000:3000"
     depends_on:
@@ -34,11 +34,11 @@ services:
     ports:
       - "5002:3306"
   contentful-cache:
-    image: natdarke/base-service-contentful-cache:develop
+    image: natdarke/base-contentful-cache:develop
     # volumes:
     #  - ../services/contentful-cache/src:/var/www/html
     env_file:
-      - environment/dev/base-service-contentful-cache.env
+      - environment/dev/base-contentful-cache.env
     ports:
       - "5001:80"
     depends_on:

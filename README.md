@@ -27,7 +27,7 @@ The goal is to provide:
     * [Local Directory Structure](#local-directory-structure)
     * [Using Volumes in Development](#using-volumes-in-development)
     * [Prepare Dev Environment](#prepare-dev-environment)
-    * [Start an App on Local Host](#start-an-app-on-local-host)
+    * [Start App on Local Host](#start-app-on-local-host)
     * [Develop a Feature or Fix a Bug](#develop-a-feature-or-fix-a-bug)
     * [Working On Multiple Services](#working-on-multiple-services)
     * [Working with Dependency Packages](#working-with-dependency-packages)

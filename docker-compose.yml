@@ -8,15 +8,15 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
   static:
-    image: natdarke/robot-service-static
+    image: natdarke/base-service-static
     ports: 
       - "5003:80"
     environment:
-      - environment/prod/robot-service-static.env
+      - environment/prod/base-service-static.env
   front-end:
-    image: natdarke/robot-service-front-end
+    image: natdarke/base-service-front-end
     env_file:
-      - environment/prod/robot-service-front-end.env
+      - environment/prod/base-service-front-end.env
     ports:
       - "5000:5000"
     depends_on:
@@ -29,9 +29,9 @@ services:
     ports:
       - "5002:3306"
   contentful-cache:
-    image: natdarke/robot-service-contentful-cache
+    image: natdarke/base-service-contentful-cache
     env_file:
-      - environment/prod/robot-service-contentful-cache.env
+      - environment/prod/base-service-contentful-cache.env
     ports:
       - "5001:80"
     depends_on:

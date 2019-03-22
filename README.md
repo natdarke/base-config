@@ -633,6 +633,15 @@ Follow the instructions here: [Set Up App on Local Host](#set-up-app-on-local-ho
 
 ### NPM Package Testing
 
+NPM modules need to be tested as individual entities as they are intended for general use in many applications. However, ideally they would also have regression testing in all apps that use it
+
+The following testing can be done for an NPM package
+
+1. Feature testing during development
+2. Regression testing for each service/application that uses the new version of the package.
+2. Unit tests for the package
+3. Demo application for testing possible use cases for the package
+
 ---
 
 ## Glossary

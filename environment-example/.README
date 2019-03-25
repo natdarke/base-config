@@ -1,5 +1,0 @@
-Environment Files should be unique per instance of robot i.e. unique per website. 
-
-When deploying a site you should copy environment-example to environment and then set the correct values in the files therein
-
- 

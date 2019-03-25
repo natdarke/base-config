@@ -1,6 +1,6 @@
 # Documentation for Base
 
-This a base for any micro-services application. It is designed to be forked and used as the basis for a new application.
+This is a base for any micro-services application. It is designed to be forked and used as the basis for a new application.
 
 The goal is to provide:
 
@@ -1222,3 +1222,8 @@ It is useful for 2 key reasons
 #### Conclusion
 
 Docker has revolutionised the way that applications are built, tested and deployed, allowing for more automated and reliable procedures.
+
+
+## To do
+* Contentful Cache API
+* 

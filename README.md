@@ -92,7 +92,7 @@ Some of the advantages of a Docker-bsed micro-services architecture are:
 
 For development we are using Docker Compose as a tool to run and network Docker containers and build images on a single local host.
 
-We plan to change to using a full container cluster management and orchestration tool such as Docker Swarm or Kubinetes as this is more appropriate for a production environment where there may be multiple hosts.
+We plan to change to using Kubenetes, which is a full container cluster management and orchestration tool. This would make the development environment more compatible with a production environment on AWS or Digital Ocean.
 
 ### Services
 
@@ -349,7 +349,7 @@ You might say that these NPM packages are part of the 'development architecture'
 	
 3. View the working app 
 
-    * In your browser go to `frontend.robot`
+    * In your browser go to `frontend.base`
 
 	> You should see the application working
 

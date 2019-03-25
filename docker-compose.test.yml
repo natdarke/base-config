@@ -8,11 +8,11 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
   static:
-    image: natdarke/base-static:develop
+    image: natdarke/base-static-files:develop
     ports: 
       - "5003:80"
     environment:
-      - environment/dev/base-static.env
+      - environment/dev/base-static-files.env
   front-end:
     image: natdarke/base-front-end:develop
     env_file:

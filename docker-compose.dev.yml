@@ -10,17 +10,17 @@ services:
   static:
     image: natdarke/base-static-files:develop
     # volumes:
-    #  - "../services/static/src:/var/www"
+    #  - "../base-service-static-files/src:/var/www"
     ports: 
       - "5003:80"
     environment:
-      - environment/dev/base-static-files.env
+      - environment/dev/static-files.env
   front-end:
     image: natdarke/base-front-end:develop
     # volumes:
-    #  - "../services/front-end/app:/usr/src/app"
+    #  - "../base-service-front-end/app:/usr/src/app"
     env_file:
-      - environment/dev/base-front-end.env
+      - environment/dev/front-end.env
     ports:
       - "5000:3000"
     depends_on:
@@ -36,9 +36,9 @@ services:
   contentful-cache:
     image: natdarke/base-contentful-cache:develop
     # volumes:
-    #  - ../services/contentful-cache/src:/var/www/html
+    #  - ../base-service-contentful-cache/src:/var/www/html
     env_file:
-      - environment/dev/base-contentful-cache.env
+      - environment/dev/contentful-cache.env
     ports:
       - "5001:80"
     depends_on:

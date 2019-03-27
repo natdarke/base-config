@@ -12,11 +12,11 @@ services:
     ports: 
       - "5003:80"
     environment:
-      - environment/dev/base-static-files.env
+      - environment/dev/static-files.env
   front-end:
     image: natdarke/base-front-end:develop
     env_file:
-      - environment/dev/base-front-end.env
+      - environment/dev/front-end.env
     ports:
       - "5000:3000"
     depends_on:
@@ -32,7 +32,7 @@ services:
   contentful-cache:
     image: natdarke/base-contentful-cache:develop
     env_file:
-      - environment/dev/base-contentful-cache.env
+      - environment/dev/contentful-cache.env
     ports:
       - "5001:80"
     depends_on:

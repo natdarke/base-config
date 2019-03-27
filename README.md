@@ -19,6 +19,7 @@ The goal is to provide:
         * [Backend HTTP Services](#backend-http-services)
             * [Contentful Cache](#contentful-cache)
             * [Strapi](#strapi)
+            * [Static File Server](#static-file-server)
         * [Backend Database Services](#backend-database-services)
             * [MySQL](#mysql)
     * [Volumes](#volumes)
@@ -192,6 +193,10 @@ Disadvantages
 3. UI is not as slick
 4. Less mature in general
 
+##### Static File Server
+
+A simple Nginx file server, to serve any asset. You may prefer to use a cloud asset server like AWS S3 or Digital Ocean Object Storage.
+
 #### Backend Database Services
 
 A MySQL container run from an image taken staight from DockerHub. 
@@ -229,33 +234,126 @@ You might say that these NPM packages are part of the 'development architecture'
 
 ## Development
 
+
+
+### Repositories 
+
+#### GitHub
+
+The repositories for Base are:
+
+
+* https://github.com/natdarke/base-config
+* https://github.com/natdarke/base-service-front-end
+* https://github.com/natdarke/base-service-contentful-cache
+* https://github.com/natdarke/base-service-static-files
+
+
+These repos are meant to be forked for every new app. Therefore, when you create a new app, you should end up with that look like this:
+
+
+* https://github.com/[account-name]/[app-name]-config
+* https://github.com/[account-name]/[app-name]-service-front-end
+* https://github.com/[account-name]/[app-name]-service-contentful-cache
+* https://github.com/[account-name]/[app-name]-service-static-files
+
+#### DockerHub
+
+Base uses 2 types of service.
+
+1. Our own
+2. 3rd party
+
+For each of our own services there is an image on DockerHub:
+
+* https://cloud.docker.com/repository/docker/natdarke/base-front-end
+* https://cloud.docker.com/repository/docker/natdarke/base-contentful-cache
+* https://cloud.docker.com/repository/docker/natdarke/base-static-files
+
+When you fork Base you will need to create new repositories for each service:
+
+
+* https://cloud.docker.com/repository/docker/[account-name]/[app-name]-front-end
+* https://cloud.docker.com/repository/docker/[account-name]/[app-name]-contentful-cache
+* https://cloud.docker.com/repository/docker/[account-name]/[app-name]-static-files
+
+
 ### Local Directory Structure
 
-> This application and documentation assumes the following directory structure during development
+> This application and documentation assumes the following directory structure during development. 
 
 ```
-~/[your dev directory name]/base/config
-~/[your dev directory name]/base/service
-~/[your dev directory name]/base/service/[service-1-name]
-~/[your dev directory name]/base/service/[service-2-name]
-~/[your dev directory name]/base/package
-~/[your dev directory name]/base/package/[package-1-name]
-~/[your dev directory name]/base/package/[package-2-name]
+[app-name]/[repository-name]
+```
+
+The `[app-name]` diectory can be anywhere. e.g.
 
 ```
+~/dev/[app-name]/[repo-name]
+```
+
+Repositories should follow the following naming convention:
+
+```
+[app-name]-config
+[app-name]-service-[service-name]
+[app-name]-package-[package-name]
+```
+### Forking
+
+When creating a new application based on this one you need to do the following. 
+
+1. [Prepare Dev Environment](#prepare-dev-environment), replacing 'base' with the new app name where relevant
+
+2. For the [Config](#config) each of the [Services](#services)
+    1. Create a new repository, based on the guide in [Repositories](#repositories)
+
+    2. Create a new directory for the app using the guide in [Local Directory Structure](#local-directory-structure)
+
+    3. In the new dir, Git clone the Base repo
+    
+        * This will create a dir with the same name as the repo
+
+    4. Change the name of the new directory to be the same as the new repo created in step 1
+
+    5. In the new repo, change the location of its remote repo to be the same as the one you created in step 2 `git remote set-url origin [repo url]`
+
+    6. Create a 'develop` branch
+
+    6. Push the code to the new repo `git push`
+
+4. Link your DockerHub account to your GitHub account to allow automatic builds
+
+3. For each of the [Services](#services)
+    1. Create a new repo in [DockerHub](#dockerhub)
+    2. Configure automated builds from GitHub for the master and develop branches
+
+4. In [Config](#config) change the image names in all .yml files to relect the new images on DockeHub
+
+5. Create a new space in Contentful
+
+6. Get the Contentful space name and API key
+
+7. In [Config](#config) > environment > contentful-cache.env change values for `CONTENTFUL_TOKEN`, `CONTENTFUL_SPACE_ID`,
+`CONTENTFUL_SPACE_NAME`, `ACCESS_CONTROL_ALLOW_ORIGIN`
+
+8. In [Config](#config) > environment change values `VIRTUAL_HOST` in all .env files
+
+
+
+VIRTUAL_HOST
+ACCESS_CONTROL_ALLOW_ORIGIN
+    
 
 ### Using Volumes in Development
 
 * It is very inconvenient to work on code inside a container during development, not least because it is a purely CLI environment
+
 * A developer can mount a volume from their local machine inside a container, thereby allowing them to work on local code but have that code used within an application container/service
+
 * Docker Compose provides a convenient way to do this in a yml file
 
-
-
-
-
-
-
+* During devlopment you clone [Repositories](#repositories) and mount them by specifying the path to the repo in [Config](#config)
 
 
 ### Prepare Dev Environment

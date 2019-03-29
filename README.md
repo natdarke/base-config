@@ -318,32 +318,26 @@ When creating a new application based on this one you need to do the following.
 
     5. In the new repo, change the location of its remote repo to be the same as the one you created in step 2 `git remote set-url origin [repo url]`
 
-    6. Create a 'develop` branch
+    6. Create a `develop` branch
 
-    6. Push the code to the new repo `git push`
+    7. Push the code to the new repo `git push`
 
-4. Link your DockerHub account to your GitHub account to allow automatic builds
+3. Link your DockerHub account to your GitHub account to allow automatic builds
 
-3. For each of the [Services](#services)
+4. For each of the [Services](#services)
     1. Create a new repo in [DockerHub](#dockerhub)
     2. Configure automated builds from GitHub for the master and develop branches
 
-4. In [Config](#config) change the image names in all .yml files to relect the new images on DockeHub
+5. In [Config](#config) change the image names in all .yml files to relect the new images on DockeHub
 
-5. Create a new space in Contentful
+6. Create a new space in Contentful
 
-6. Get the Contentful space name and API key
+7. Get the Contentful space name and API key
 
-7. In [Config](#config) > environment > contentful-cache.env change values for `CONTENTFUL_TOKEN`, `CONTENTFUL_SPACE_ID`,
+8. In [Config](#config) > environment > contentful-cache.env change values for `CONTENTFUL_TOKEN`, `CONTENTFUL_SPACE_ID`,
 `CONTENTFUL_SPACE_NAME`, `ACCESS_CONTROL_ALLOW_ORIGIN`
 
-8. In [Config](#config) > environment change values `VIRTUAL_HOST` in all .env files
-
-
-
-VIRTUAL_HOST
-ACCESS_CONTROL_ALLOW_ORIGIN
-    
+9. In [Config](#config) > environment change values `VIRTUAL_HOST` in all .env files
 
 ### Using Volumes in Development
 

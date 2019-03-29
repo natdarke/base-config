@@ -26,6 +26,7 @@ The goal is to provide:
     * [Code Library](#code-library)
 * [Development](#development)
     * [Local Directory Structure](#local-directory-structure)
+    * [Forking](#forking)
     * [Using Volumes in Development](#using-volumes-in-development)
     * [Prepare Dev Environment](#prepare-dev-environment)
     * [Start App on Local Host](#start-app-on-local-host)
@@ -289,15 +290,15 @@ When you fork Base you will need to create new repositories for each service:
 The `[app-name]` diectory can be anywhere. e.g.
 
 ```
-~/dev/[app-name]/[repo-name]
+~/dev/[app-name]/[repository-name]
 ```
 
 Repositories should follow the following naming convention:
 
 ```
 [app-name]-config
-[app-name]-service-[service-name]
-[app-name]-package-[package-name]
+[app-name]-service-[service-package-name]
+[app-name]-package-[dependency-package-name]
 ```
 ### Forking
 
@@ -318,9 +319,11 @@ When creating a new application based on this one you need to do the following.
 
     5. In the new repo, change the location of its remote repo to be the same as the one you created in step 2 `git remote set-url origin [repo url]`
 
-    6. Create a `develop` branch
+    6. Change the app name in package.json
 
-    7. Push the code to the new repo `git push`
+    7. Branch `master` to `develop`
+
+    8. Push the `master` and `develop` branches to the new repo `git push`
 
 3. Link your DockerHub account to your GitHub account to allow automatic builds
 
@@ -376,8 +379,8 @@ When creating a new application based on this one you need to do the following.
     * In /etc/hosts, add the following lines
 	
         ```
-        127.0.0.1    frontend.base
-        127.0.0.1    contentful.base
+        127.0.0.1    frontend.[app-name]
+        127.0.0.1    contentful.[app-name]
         ```
   
 5. Create a GitHub account and ask us to add it to the Base organisation
@@ -400,31 +403,32 @@ When creating a new application based on this one you need to do the following.
     > 'Config' is just the Docker Compose config files and environment variable files that allow you to start the app.
 	
     ```
-    mkdir -p ~/[your dev directory name]/base/config
+    mkdir -p [dev-directory]/[app-name]
     
-    cd ~/[your dev directory name]/base/config
+    cd [dev-directory]/[app-name]
 
-    git clone git@github.com:natdarke/base-config.git
+    git clone git@github.com:natdarke/[app-name]-config.git
     ```
+    This creates a directory called `[app-name]-config`
 
 2. Use Docker Compose to start the app
 	
     * #### For Development
         ```
-        cd ~/[your dev directory name]/base/config
+        cd [dev-directory]/[app-name]/[app-name]-config
 
         sudo docker-compose -f docker-compose.dev.yml up -d
         ```
     * #### For Regression Testing and UAT
         ```
-        cd ~/[your dev directory name]/base/config
+        cd [dev-directory]/[app-name]/[app-name]-config
 
         sudo docker-compose -f docker-compose.test.yml up -d
         ```
     * #### For feature Testing
         > This file needs to be created and deleted by the developer, per feature
         ```
-        cd ~/[your dev directory name]/base/config
+        cd [dev-directory]/[app-name]/[app-name]-config
 
         git fetch
 
@@ -441,7 +445,7 @@ When creating a new application based on this one you need to do the following.
 	
 3. View the working app 
 
-    * In your browser go to `frontend.base`
+    * In your browser go to `frontend.[app-name]`
 
 	> You should see the application working
 
@@ -468,17 +472,19 @@ Developing a feature involves complex processes for collaboration, building and 
         1. Clone the service you need to work on
             
             ```
-            mkdir -p ~/[your dev directory name]/base/service
+            mkdir -p ~/[dev directory]/[app-name]
             
-            cd ~/[your dev directory name]/base/service
+            cd [dev-directory]/[app-name]
 
-            git clone git@github.com:natdarke/[service-name].git
+            git clone git@github.com:natdarke/[service-repo-name].git
 
             ```
-            > `[service-name]` will be the same as the name used in `docker-compose.yml` or `docker-compose.dev.yml`
-        2. Fetch remote branches and checkout develop
+            `clone` will create a new directory called `[service-repo-name]`
+            > `[service-repo-name]` will look like this `[app-name]-service-[service-package-name]`
+        2. `npm install`
+        3. Fetch remote branches and checkout develop
             ```
-            cd [service-name]
+            cd [dev-directory]/[app-name]/[service-package-name]
             git fetch
             git checkout develop
             ```
@@ -487,12 +493,13 @@ Developing a feature involves complex processes for collaboration, building and 
         
         1. Make sure the develop branch exists locally and is up to date
             ```
-            cd ~/[your dev directory name]/base/service/[service-name]
+            cd [dev-directory]/[app-name]/[service-repo-name]
             git fetch
             git checkout develop
             git pull develop
             ```
             If you have followed the [General Rules For Git](#general-rules-for-git) (above) there will NOT be a merge conflict.
+        2. `npm install`
 
 2. Create a feature branch from the develop branch and check it out
 	
@@ -539,7 +546,7 @@ Developing a feature involves complex processes for collaboration, building and 
 4. Start / Re-Start the application
 
     ```
-    cd ~/[your dev directory name]/base/config
+    cd [dev-directory]/[app-name]/[app-name]-config
 
     sudo docker-compose -f docker-compose.dev.yml down
 
@@ -567,10 +574,10 @@ Developing a feature involves complex processes for collaboration, building and 
     1. Follow the instructions in [Working with Dependency Packages](#working-with-dependency-packages)
     2. ##### When you have finished working on the dependency package
         * Update the version number of the package in the service's package.json file
-        * In other words change `~/[your dev directory name]/base/service/[service-name]/package.json` to use the exact version in `~/[your dev directory name]/base/package/[package-name]/package.json` e.g. `1.1.0`
+        * In other words change `[dev-directory]/[app-name]/[service-repo-name]/package.json` to use the exact version in `[dev-directory]/[app-name]//[package-repo-name]/package.json` e.g. `1.1.0`
     3. Commit the version number change
         ```
-        git commit -am "Version number change for dependency package [package-name]"
+        git commit -am "Version number change for dependency package [package-repo-name]"
         ```
 
 6. Push the feature branch
@@ -603,7 +610,7 @@ Developing a feature involves complex processes for collaboration, building and 
     ```
     > This triggers an automatic feature image build on DockerHub, tagged with the same name i.e. feature-[feature name]-1		
 
-9. In `service/config` branch `develop` to `feature/[feature-name]`.
+9. In `[dev-directory]/[app-name]/[app-name]-config` branch `develop` to `feature/[feature-name]`.
 10. In `docker-compose.test.yml` change the tag of the service image to be `feature-[feature-name]` e.g. change
     ```
     front-end:
@@ -641,16 +648,17 @@ To complete the feature story you might not need to change a service at all, oth
     
 1. Clone 'dependency package' repo 
     ```
-    mkdir ~/[your dev directory name]/base/package/[package-name]/
+    mkdir [dev-directory]/[app-name]
     
-    cd ~/[your dev directory name]/base/package/[package-name]/ 
+    cd [dev-directory]/[app-name]
 
-    git clone git@github.com:natdarke/[package-name].git
+    git clone git@github.com:natdarke/[package-repo-name].git
     ```
+    `clone` will create a new directory called `[package-repo-name]`
 
 2. In the 'dependency package', branch from `develop` to `feature/[feature-name]`
     ```
-    cd ~/[your dev directory name]/base/service/[service-name]/node_modules_linked/[package-name]
+    cd [dev-directory]/[app-name]/[package-repo-name]
 
     git fetch 
     
@@ -663,18 +671,18 @@ To complete the feature story you might not need to change a service at all, oth
 3. Link the 'dependency package' to the service using `npm link`
     See [NPM Link](#npm-link)
     ```
-    cd ~/[your dev directory name]/base/package/[package-name]/
+    cd [dev-directory]/[app-name]/[package-repo-name]
 
     npm link
 
-    cd ~/[your dev directory name]/base/service/[service-name]
+    cd [dev-directory]/[app-name]/[service-repo-name]
 
-    npm link [package-name]
+    npm link [package-repo-name]
     ```
     > This allows you to work on the 'dependency package' code during development and see the changes you make reflected in the service. 
     
 
-4. Work on `~/[your dev directory name]/base/package/[package-name]/` with git as per normal
+4. Work on `[dev-directory]/[app-name]/[package-repo-name]/` with git as per normal
 
 5. Bump the 'dependency package' version, according to [Semantic Versioning](#semantic-versioning) principles, and git commit the change
 
@@ -691,7 +699,7 @@ To complete the feature story you might not need to change a service at all, oth
         "version": "1.1.0",
     ```
     
-    in `~/[your dev directory name]/base/package/[package-name]/package.json`
+    in `[dev-directory]/[app-name]/[package-repo-name]/package.json`
 6. Push `feature/[feature-name]` branch
     ```
     git push origin feature/[feature-name]
@@ -708,7 +716,7 @@ To complete the feature story you might not need to change a service at all, oth
     > You may be prompted for a username a password. You must have an npmjs.com account and that account must have been given permission to publish by its owner. See [Publishing to NPM JS](#publishing-to-npm-js)
 
     ```
-    cd ~/[your dev directory name]/base/package/[package-name]
+    cd [dev-directory]/[app-name]/[package-repo-name]
 
     npm publish --tag feature-[feature-name]
     ```
@@ -1043,35 +1051,36 @@ During development you will probably need to use NPM Link. This is a feature of 
 
 To make matters more confusing, you are also using a Docker Volume during development
 
-> NPM Link uses symlinks to temporarily replace the npm package in `/path/to/app/node_modules` with the one in `/path/to/local/dev/npm/package/`
+> NPM Link uses symbolic links to temporarily replace the npm package in `/path/to/app/node_modules` with the one in `/path/to/local/dev/npm/package/`
 
-> In the case of this application, `/path/to/local/dev/npm/package/` is `~/[your dev directory name]/base/package/[package-name]`
+> In the case of this application, `/path/to/local/dev/npm/package/` is `[dev-directory]/[app-name]/[package-repo-name]`
 
 * Linking
     1. In the package
         ```
-        cd /path/to/local/dev/npm/package/
+        cd [dev-directory]/[app-name]/[dependency-package-name]
+
         npm link
         ```
 
         This links the local development package to NPM's global install directory.
 
-        It creates a symbolic link in the NPM global install directory that points to the local development package. More specifically, a symbolic link is create in `[prefix]/lib/node_modules/[package-name]` that points to `/path/to/local/dev/npm/package/`
+        It creates a symbolic link in the NPM global install directory that points to the local development package. More specifically, a symbolic link is create in `[prefix]/lib/node_modules/[dependency-package-name]` that points to `[dev-directory]/[app-name]/[dependency-package-name]`
 
-        > The NPM global install directory is where NPM installs packages when you use the -g flag i.e. packages that are used on the command line rather than used as a dependency in an application. It can be located in different places according to your OS and if you are using Node Version Manager (NVM) but takes the form `[prefix]/lib/node_modules/[package-name]`, with `{prefix}` being the part that varies. 
+        > The NPM global install directory is where NPM installs packages when you use the -g flag i.e. packages that are used on the command line rather than used as a dependency in an application. It can be located in different places according to your OS and if you are using Node Version Manager (NVM) but takes the form `[prefix]/lib/node_modules/[dependency-package-name]`, with `{prefix}` being the part that varies. 
 
-        > On Ubuntu Linux, the location is either probably `/usr/local/lib/node_modules/[package-name]` or, if you are using NVM, `~/.nvm/versions/node/[version-number]/lib/node_modules`
+        > On Ubuntu Linux, the location is either probably `/usr/local/lib/node_modules/[dependency-package-name]` or, if you are using NVM, `~/.nvm/versions/node/[version-number]/lib/node_modules`
     2. In the service (aka application, or 'root package')
         ```
-        cd /path/to/app/
-        npm link [package-name]
+        cd [dev-directory]/[app-name]/[service-repo-name]
+        npm link [dependency-package-name]
         ```
-        This links NPM's global install directory to the service i.e. creates a symbolic link in `[prefix]/lib/node_modules/` that points to `/path/to/app/node_modules/[package-name]`
+        This links NPM's global install directory to the service i.e. creates a symbolic link in `[prefix]/lib/node_modules/` that points to `/path/to/app/node_modules/[dependency-package-name]`
 
 * Un-linking
     > It is essential that you unlink a package after working on it. This act of 'cleaning up' will help you avoid errors after, e.g. after switching branch
 
-    1. In the service: `npm unlink --no-save [package-name]`
+    1. In the service: `npm unlink --no-save [dependency-package-name]`
     2. In the package: `npm unlink`
 
     > The order is important

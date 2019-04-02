@@ -27,7 +27,8 @@ The goal is to provide:
 * [Development](#development)
     * [Local Directory Structure](#local-directory-structure)
     * [Forking](#forking)
-    * [Repositories and Naming Conventions](#repositories-and-naming-conventions)
+    * [Repositories](#repositories)
+    * [Naming Conventions](#naming-conventions)
     * [Using Volumes in Development](#using-volumes-in-development)
     * [Prepare Dev Environment](#prepare-dev-environment)
     * [Start App on Local Host](#start-app-on-local-host)
@@ -223,9 +224,6 @@ This can also be accomplished using a service from your cloud infrastructure pro
 
 Volumes are also essential when developing using containers. [Using Volumes in Development](#using-volumes-in-development)
 
-
-
-
 ### Code Library
 
 Code that is re-usable across more than one service is stored in a private library of JavaScript [NPM](#npm) packages. Source code for these packages is stored on GitHub and distribution code is published to npmjs.com.
@@ -236,14 +234,11 @@ You might say that these NPM packages are part of the 'development architecture'
 
 ## Development
 
-
-
-### Repositories and naming conventions
+### Repositories
 
 #### GitHub
 
 The repositories for Base are:
-
 
 * https://github.com/natdarke/base-config
 * https://github.com/natdarke/base-service-front-end
@@ -280,7 +275,7 @@ When you fork Base you will need to create new repositories for each service
 
 #### NPM
 
-There are 2 types of [NPM package](#npm-packages)
+We distinguish between 2 [types of NPM package](#package-types)
 
 1. Root Packages
 2. Dependency packages
@@ -288,8 +283,6 @@ There are 2 types of [NPM package](#npm-packages)
 Only dependency packages are published to NPM
 
 https://www.npmjs.com/package/[unique-package-name]
-
-
 
 ### Naming Conventions
 
@@ -447,8 +440,9 @@ When creating a new application based on this one you need to do the following.
     * In /etc/hosts, add the following lines
 	
         ```
-        127.0.0.1    frontend.[app-name]
-        127.0.0.1    contentful.[app-name]
+        127.0.0.1    front-end.[app-name]
+        127.0.0.1    contentful-cache.[app-name]
+        127.0.0.1    static-files.[app-name]
         ```
   
 5. Create a GitHub account and ask us to add it to the Base organisation
@@ -513,7 +507,7 @@ When creating a new application based on this one you need to do the following.
 	
 3. View the working app 
 
-    * In your browser go to `frontend.[app-name]`
+    * In your browser go to `front-end.[app-name]`
 
 	> You should see the application working
 
@@ -534,6 +528,8 @@ Developing a feature involves complex processes for collaboration, building and 
 1. Clone the service 
 
     * You only need to clone the service you need to work on
+    
+    * The [naming convention](#naming-conventions) for service repositories is `[app-name]-service-[service-name]`. Henceforth, they will be referred to as `[service-repo-name]`
 
     * If you HAVE NOT cloned this service before
 
@@ -544,15 +540,14 @@ Developing a feature involves complex processes for collaboration, building and 
             
             cd [dev-directory]/[app-name]
 
-            git clone git@github.com:natdarke/[service-repo-name].git
+            git clone git@github.com:natdarke/[app-name]-service-[service-repo-name].git
 
             ```
             `clone` will create a new directory called `[service-repo-name]`
-            > `[service-repo-name]` will look like this `[app-name]-service-[service-package-name]`
         2. `npm install`
         3. Fetch remote branches and checkout develop
             ```
-            cd [dev-directory]/[app-name]/[service-package-name]
+            cd [dev-directory]/[app-name]/[service-repo-name]
             git fetch
             git checkout develop
             ```
@@ -566,7 +561,7 @@ Developing a feature involves complex processes for collaboration, building and 
             git checkout develop
             git pull develop
             ```
-            If you have followed the [General Rules For Git](#general-rules-for-git) (above) there will NOT be a merge conflict.
+            If you have followed the [GitFlow Branching Strategy](#gitflow-branching-strategy) there will NOT be a merge conflict.
         2. `npm install`
 
 2. Create a feature branch from the develop branch and check it out
@@ -588,28 +583,28 @@ Developing a feature involves complex processes for collaboration, building and 
 
     For example, if the service you need to work on is `static` then you need to change
     ```
-    static:
-        image: natdarke/robot-service-static:develop
+    static-files:
+        image: natdarke/base-static-files
         # volumes:
-        # - "../services/static/src:/var/www"
+        #  - "../base-service-static-files/src:/var/www"
         ports: 
         - "5003:80"
         environment:
-        - environment/dev/robot-service-static.env
+        - environment/dev/static-files.env
     ```
     to
        
     ```
-    static:
-        image: natdarke/robot-service-static:develop
+    static-files:
+        image: natdarke/base-static-files
         volumes:
-        - "../services/static/src:/var/www"
+        - "../base-service-static-files/src:/var/www"
         ports: 
         - "5003:80"
         environment:
-        - environment/dev/robot-service-static.env
+        - environment/dev/static-files.env
     ```
-    > The path before the colon (e.g. `../services/static/src`) is a relative path to the source code of the service you checked out from GitHub, so make sure your directory structure is reflects this.
+    > The path before the colon (e.g. `../base-service-static-files/src`) is a relative path to the source code of the service you checked out from GitHub, so make sure your directory structure is reflects this.
 
 4. Start / Re-Start the application
 
@@ -642,7 +637,7 @@ Developing a feature involves complex processes for collaboration, building and 
     1. Follow the instructions in [Working with Dependency Packages](#working-with-dependency-packages)
     2. ##### When you have finished working on the dependency package
         * Update the version number of the package in the service's package.json file
-        * In other words change `[dev-directory]/[app-name]/[service-repo-name]/package.json` to use the exact version in `[dev-directory]/[app-name]//[package-repo-name]/package.json` e.g. `1.1.0`
+        * In other words change `[dev-directory]/[app-name]/[service-repo-name]/package.json` to use the exact version in `[dev-directory]/[app-name]/[package-repo-name]/package.json` e.g. `1.1.0`
     3. Commit the version number change
         ```
         git commit -am "Version number change for dependency package [package-repo-name]"
@@ -682,15 +677,15 @@ Developing a feature involves complex processes for collaboration, building and 
 10. In `docker-compose.test.yml` change the tag of the service image to be `feature-[feature-name]` e.g. change
     ```
     front-end:
-        image: natdarke/robot-service-front-end:develop
+        image: natdarke/[app-name]-service-front-end:develop
     ```
     to
     ```
     front-end:
-        image: natdarke/robot-service-front-end:feature-[feature-name]
+        image: natdarke/[app-name]-service-front-end:feature-[feature-name]
     ```
 11. Commit the change
-12. Push `feature/[feature-name]` of Root to GitHub
+12. Push `feature/[feature-name]` of Config to GitHub
 13. Instruct tester to test the feature using `docker-compose.test.yml` on branch `feature/[feature-name]`
 14. If a dependency package was changed, and you are happy that it has had enough testing, re-publish it with the tag `latest`. This will cause the new version to become the default installation. Other developers can update to the new version using `npm install`
 
@@ -705,9 +700,9 @@ Working on multiple services for a single story is no different from working on 
 
 A 'dependency package' is an NPM package that is used by a JavaScript service. 
 
-In fact, this is more of a convenient way to think than an accurate description. A 'dependency package' is, actually, an NPM package that is used by another NPM package. JavaScript services are, essentially, an NPM 'root package' with a Dockerfile. To understand more read [NPM](#npm).
+In fact, this is more of a convenient way to think than an accurate description. A 'dependency package' is, actually, an NPM package that is used by another NPM package. JavaScript services are, essentially, an NPM 'root package' with a Dockerfile. To understand more read [NPM Packages](#npm-packages).
 
-If you need to work with a 'dependency package' the workflow gets a bit more complicated as the code is not in the repo for the service. It is an [NPM](#npm) package used by the service, not part of the service _per se_.
+If you need to work with a 'dependency package' the workflow gets a bit more complicated as the code is not in the repo for the service. It is an [NPM package](#npm-packages) package used by the service, not part of the service _per se_.
 
 If feature story requires some work on a 'dependency package' it is probably best to split the work on the 'dependency package'into a seperate task, to be completed before the work on the feature story begins. This is because 'dependency packages' are meant to be used by more than one service.
 
@@ -982,20 +977,21 @@ A dependency can be mocked using `npm link` ([NPM Link](#npm-link)). This can be
 
 Nested dependencies are dependendencies within dependencies. `npm install` will also install nested dependencies.
 
-##### Package Use
+##### Package Types
 
-NPM packages tend to be either whole applications that are NOT shared using NPM, or useful tools that are useful _in general_, are shared using NPM and used in other packages. I call these 'root packages' and 'dependeny packages'.
+Officially there aren't different types of packages but, in practice, ther are 2 types that I call 'root packages' and 'dependeny packages'
 
 * Root Packages
+    * Typically, this would be a package that forms the spine of an application and would have many dependencies
     * Not a dependency
     * Has dependencies
-    * Typically, this would be a package that forms the spine of an application and would have many dependencies
     * NOT published to an NPM repository as it is not intended to be installed as a dependency.
     * A JavaScript service is, basically, a docker container running a 'Root Package'. The git repo contains a Dockerfile and the package code
 
 * Dependency Packages 
+    * Tools that are useful _in general_
     * Intended to be published to [NPM JS](#npm-js) (or some other NPM repository) and installed in other packages. 
-    * Should be usable in any other package. 
+    * Should be usable in any other package
     * Can be published pubicly, for use by anyone
     * Can be published privately, only for use by your organisation 
 
@@ -1045,7 +1041,7 @@ NPM packages can be stored in 2 locations on the internet.
 
 ##### Distribution Code
 
-- Compiled 
+- Compiled
 - Browser safe
 - Node safe
 - Needs to be built before publishing

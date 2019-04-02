@@ -584,9 +584,9 @@ Developing a feature involves complex processes for collaboration, building and 
     For example, if the service you need to work on is `static` then you need to change
     ```
     static-files:
-        image: natdarke/base-static-files
+        image: natdarke/[app-name]-static-files
         # volumes:
-        #  - "../base-service-static-files/src:/var/www"
+        #  - "..//[app-name]-service-static-files/src:/var/www"
         ports: 
         - "5003:80"
         environment:
@@ -596,15 +596,15 @@ Developing a feature involves complex processes for collaboration, building and 
        
     ```
     static-files:
-        image: natdarke/base-static-files
+        image: natdarke//[app-name]-static-files
         volumes:
-        - "../base-service-static-files/src:/var/www"
+        - "..//[app-name]-service-static-files/src:/var/www"
         ports: 
         - "5003:80"
         environment:
         - environment/dev/static-files.env
     ```
-    > The path before the colon (e.g. `../base-service-static-files/src`) is a relative path to the source code of the service you checked out from GitHub, so make sure your directory structure is reflects this.
+    > The path before the colon (e.g. `..//[app-name]-service-static-files/src`) is a relative path to the source code of the service you checked out from GitHub, so make sure your directory structure is reflects this.
 
 4. Start / Re-Start the application
 

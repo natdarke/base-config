@@ -27,6 +27,7 @@ The goal is to provide:
 * [Development](#development)
     * [Local Directory Structure](#local-directory-structure)
     * [Forking](#forking)
+    * [Repositories and Naming Conventions](#repositories-and-naming-conventions)
     * [Using Volumes in Development](#using-volumes-in-development)
     * [Prepare Dev Environment](#prepare-dev-environment)
     * [Start App on Local Host](#start-app-on-local-host)
@@ -237,7 +238,7 @@ You might say that these NPM packages are part of the 'development architecture'
 
 
 
-### Repositories 
+### Repositories and naming conventions
 
 #### GitHub
 
@@ -271,13 +272,80 @@ For each of our own services there is an image on DockerHub:
 * https://cloud.docker.com/repository/docker/natdarke/base-contentful-cache
 * https://cloud.docker.com/repository/docker/natdarke/base-static-files
 
-When you fork Base you will need to create new repositories for each service:
-
+When you fork Base you will need to create new repositories for each service
 
 * https://cloud.docker.com/repository/docker/[account-name]/[app-name]-front-end
 * https://cloud.docker.com/repository/docker/[account-name]/[app-name]-contentful-cache
 * https://cloud.docker.com/repository/docker/[account-name]/[app-name]-static-files
 
+#### NPM
+
+There are 2 types of [NPM package](#npm-packages)
+
+1. Root Packages
+2. Dependency packages
+
+Only dependency packages are published to NPM
+
+https://www.npmjs.com/package/[unique-package-name]
+
+
+
+### Naming Conventions
+
+#### Docker Compose Service Name
+
+`[service-name]`
+
+#### Docker Compose Virtual Host (env var)
+`[service-name].[app-name]`
+
+#### /etc/hosts
+
+`[service-name].[app-name]`
+
+#### GitHub repos
+
+* For a Config
+
+    `[app-name]-config`
+
+* For a Service
+
+    `[app-name]-service-[service-name]`
+
+* For a Dependency Package
+
+    `[unique-package-name]`
+
+    > This will be the same name as used in the package.json and in the npm repo
+
+#### DockerHub repo
+
+`[app-name]-[service-name]`
+
+> This will be the same as the GitHub repo but without the word "service" in the middle, as all our Docker Images are services
+
+
+#### NPM Packages (package.json name)
+
+* Root Package for a Service
+
+    `[app-name]-root-[service-name]`
+    > Note this differs slightly from the GitHub repo name and the DockerHub repo names for this service
+
+* Dependency Package
+
+    `[unique-package-name]`
+
+    > This will be the same name as used in the GitHub repo and in the npm repo
+
+#### NPM repos
+
+* Dependency Package
+
+    `[unique-package-name]`
+    > This will be the same name as used in the GitHub repo and in the package.json
 
 ### Local Directory Structure
 

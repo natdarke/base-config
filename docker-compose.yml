@@ -7,7 +7,7 @@ services:
       - "80:80"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-  static:
+  static-files:
     image: natdarke/base-static-files
     ports: 
       - "5003:80"
@@ -21,7 +21,7 @@ services:
       - "5000:5000"
     depends_on:
       - contentful-cache
-      - static
+      - static-files
   mysql:
     image: mysql:5.7.18
     env_file:

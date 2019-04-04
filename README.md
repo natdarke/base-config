@@ -419,6 +419,13 @@ When creating a new application based on this one you need to do the following.
 
 9. Copy [Config](#config) > /environment-example/ to /environment/ and change the values following the hints inside. /environment/ is listed in .gitignore and it should stay that way i.e. make sure you don't commit them.
 
+10. For each service add 'virtual host' names to /etc/hosts
+
+    ```
+    127.0.0.1       [service-name].[app-name]
+    ```
+
+
 ### Using Volumes in Development
 
 * It is very inconvenient to work on code inside a container during development, not least because it is a purely CLI environment

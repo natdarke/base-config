@@ -358,33 +358,50 @@ Repositories should follow the following naming convention:
 
 ```
 [app-name]-config
-[app-name]-service-[service-package-name]
+[app-name]-service-[service-name]
 [app-name]-package-[dependency-package-name]
 ```
 ### Forking
 
 When creating a new application based on this one you need to do the following. 
 
-1. [Prepare Dev Environment](#prepare-dev-environment), replacing 'base' with the new app name where relevant
+1. [Prepare Dev Environment](#prepare-dev-environment)
+    * Replacing 'base' with the new app name where relevant
 
-2. For the [Config](#config) each of the [Services](#services)
-    1. Create a new repository, based on the guide in [Repositories](#repositories)
-
-    2. Create a new directory for the app using the guide in [Local Directory Structure](#local-directory-structure)
-
-    3. In the new dir, Git clone the Base repo
+2. Create an 'new app directory'
     
-        * This will create a dir with the same name as the repo
+    * Create a new directory for the new app in your development directory (using the guide in [Local Directory Structure](#local-directory-structure)). This will contain local repos for the config and each service
 
-    4. Change the name of the new directory to be the same as the new repo created in step 1
+3. For the [Config](#config) AND each of the [Services](#services)
 
-    5. In the new repo, change the location of its remote repo to be the same as the one you created in step 2 `git remote set-url origin [repo url]`
+    1. In the 'new app directory' created in step 2, Git clone the base app repo for the config or service you want to fork
 
-    6. Change the app name in package.json
+    2. Rename the cloned repo directory created in step 3.1
+
+        From 
+        * `base-config` or 
+        * `base-service-[service-name]`
+        
+        To
+        * `[app-name]-config` or 
+        * `[app-name]-service-[service-name]`
+
+    3. Create a new remote repository in GitHub, with the same name as the renamed repo directory in step 3.2
+
+    4. Change the remote repo address
+    
+        * In the renamed repo directory in step 3.2
+    
+            `git remote set-url origin [new remote repository url]`
+
+    6. If this is a service (not the config) change the app name in package.json to be `[app-name]-root-[service-name]` and commit to master branch
 
     7. Branch `master` to `develop`
 
-    8. Push the `master` and `develop` branches to the new repo `git push`
+    8. Push the `master` and `develop` branches to the new repo 
+    
+        * `git push origin master`
+        * `git push origin develop`
 
 3. Link your DockerHub account to your GitHub account to allow automatic builds
 

@@ -396,12 +396,11 @@ When creating a new application based on this one you need to do the following.
 
 6. Create a new space in Contentful
 
-7. Get the Contentful space name and API key
+7. In Contentful > [new space] > Space Settings > General Settings, make a note of the Contentful 'Space name' and 'Space ID' and use in step 9
 
-8. In [Config](#config) > environment > contentful-cache.env change values for `CONTENTFUL_TOKEN`, `CONTENTFUL_SPACE_ID`,
-`CONTENTFUL_SPACE_NAME`, `ACCESS_CONTROL_ALLOW_ORIGIN`
+8. In Contentful > [new space] > Space Settings > API Keys > Add API Key, create a 'Content Delivery API - access token' and use in step 9
 
-9. In [Config](#config) > environment change values `VIRTUAL_HOST` in all .env files
+9. Copy [Config](#config) > /environment-example/ to /environment/ and change the values following the hints inside. /environment/ is listed in .gitignore and it should stay that way i.e. make sure you don't commit them.
 
 ### Using Volumes in Development
 

@@ -538,6 +538,8 @@ When creating a new application based on this one you need to do the following.
 
 ### Develop a Feature or Fix a Bug
 
+![Diagram showing Local Host during devlopment of micro services application](micro-services-local-host.svg "Local Host")
+
 Developing a feature involves complex processes for collaboration, building and deployment. Git, GitHub, NPM, NPM JS, Docker, Docker Compose and Docker Hub all play their part 
 
 * Assumptions

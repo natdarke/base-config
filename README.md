@@ -85,8 +85,6 @@ Some of the advantages of a Docker-bsed micro-services architecture are:
 * Clear responsibility and ownership. One team can be reponsible for a specific micro-service.
 * Scaling. You can run multiple, load-balanced clones of a container for each service. This means that, in production, each service can repond to demand independently, by increasing or decreasing resources, ensuring 'just-enough' performance and optimising costs.
 
-### Local Host
-
 The following diagram shows an abstraction of this application's architecture when being developed on a local host machine
 
 ![Diagram showing Local Host during devlopment of micro services application](micro-services-local-host.png "Local Host")

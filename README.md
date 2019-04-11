@@ -85,6 +85,12 @@ Some of the advantages of a Docker-bsed micro-services architecture are:
 * Clear responsibility and ownership. One team can be reponsible for a specific micro-service.
 * Scaling. You can run multiple, load-balanced clones of a container for each service. This means that, in production, each service can repond to demand independently, by increasing or decreasing resources, ensuring 'just-enough' performance and optimising costs.
 
+### Local Host
+
+The following diagram shows an abstraction of this application's architecture when being developed on a local host machine
+
+![Diagram showing Local Host during devlopment of micro services application](micro-services-local-host.png "Local Host")
+
 ### Config
 
 'Config' is just some config files used to start up the application. It consists of
@@ -537,8 +543,6 @@ When creating a new application based on this one you need to do the following.
 4. Now you are ready to build a feature, fix a bug or test
 
 ### Develop a Feature or Fix a Bug
-
-![Diagram showing Local Host during devlopment of micro services application](micro-services-local-host.png "Local Host")
 
 Developing a feature involves complex processes for collaboration, building and deployment. Git, GitHub, NPM, NPM JS, Docker, Docker Compose and Docker Hub all play their part 
 
